@@ -59,7 +59,7 @@ export default {
   fetch: app.fetch,
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
     switch (event.cron) {
-      case '0 */2 * * *':
+      case '*/30 * * * *':
         ctx.waitUntil(handleFetchFeeds(env));
         break;
       case '5 0 * * *':

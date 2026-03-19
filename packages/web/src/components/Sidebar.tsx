@@ -167,7 +167,7 @@ export default function Sidebar({ activeTab, onTabChange, activeSection, onSecti
 
         <div className="border-t border-gray-200 px-4 py-3 dark:border-[#333]">
           <p className="text-[11px] text-gray-400 dark:text-gray-600">
-            20 ソース &middot; 2時間毎に更新
+            20 ソース &middot; 30分毎に更新
           </p>
         </div>
       </aside>

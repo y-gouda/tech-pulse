@@ -8,7 +8,7 @@ Feedly風UIのRSSニュースアグリゲーター。Cloudflare Workers + Pages 
 - **バックエンド**: Hono (Cloudflare Workers)
 - **データベース**: Cloudflare D1 (SQLite + FTS5全文検索)
 - **キャッシュ**: Cloudflare KV
-- **定期実行**: Cloudflare Cron Triggers (2時間毎)
+- **定期実行**: Cloudflare Cron Triggers (30分毎)
 
 ## プロジェクト構成
 
@@ -85,7 +85,7 @@ npm run deploy:worker
 - D1: 5GB ストレージ
 - KV: 10万reads/日、1,000writes/日
 - Cron: 最大5つ
-- 現在20ソース、2時間毎取得で十分余裕あり
+- 現在20ソース、30分毎取得で十分余裕あり
 
 ## カテゴリ・ソース変更手順
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Article, Pagination as PaginationType, Category } from '@tech-pulse/shared/types';
 import { fetchArticles } from './api/client';
 import { useTheme } from './hooks/useTheme';
@@ -11,7 +11,6 @@ import Sidebar from './components/Sidebar';
 import type { TabKey } from './components/Sidebar';
 import ArticleList from './components/ArticleList';
 import TodayView from './components/TodayView';
-import PaginationControls from './components/Pagination';
 import LoadingSpinner from './components/LoadingSpinner';
 
 const TECH_CATEGORIES: Category[] = ['programming', 'ai-ml', 'infra-cloud'];
@@ -32,16 +31,18 @@ export default function App() {
   const [pagination, setPagination] = useState<PaginationType | null>(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [todayArticles, setTodayArticles] = useState<Article[]>([]);
   const [todayLoading, setTodayLoading] = useState(false);
 
-  // Current section's categories
+  const mainRef = useRef<HTMLElement>(null);
+
   const sectionCategories = activeSection === 'tech' ? TECH_CATEGORIES : NEWS_CATEGORIES;
 
-  // Fetch today's articles (section-scoped)
+  // Fetch today's articles
   useEffect(() => {
     if (activeTab !== 'today') return;
     if (query.trim()) return;
@@ -64,13 +65,17 @@ export default function App() {
     return () => { cancelled = true; };
   }, [activeTab, activeSection, query]);
 
-  // Fetch articles for category/all views
+  // Fetch articles (page 1 = fresh load, page > 1 = append)
   useEffect(() => {
     if (activeTab === 'bookmarks' || activeTab === 'today') return;
     if (query.trim()) return;
 
     let cancelled = false;
-    setLoading(true);
+    if (page === 1) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
     setError(null);
 
     const isAll = activeTab === 'all';
@@ -81,7 +86,11 @@ export default function App() {
     fetchArticles(params)
       .then((res) => {
         if (!cancelled) {
-          setArticles(res.data.articles);
+          if (page === 1) {
+            setArticles(res.data.articles);
+          } else {
+            setArticles((prev) => [...prev, ...res.data.articles]);
+          }
           setPagination(res.data.pagination);
         }
       })
@@ -89,35 +98,48 @@ export default function App() {
         if (!cancelled) setError(err.message || '記事の取得に失敗しました');
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
       });
 
     return () => { cancelled = true; };
   }, [activeTab, activeSection, page, query]);
 
+  // Infinite scroll handler
+  useEffect(() => {
+    const el = mainRef.current;
+    if (!el) return;
+
+    const handleScroll = () => {
+      if (loadingMore || loading) return;
+      if (!pagination?.hasMore) return;
+      if (query.trim()) return;
+      if (activeTab === 'bookmarks' || activeTab === 'today') return;
+
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      if (scrollHeight - scrollTop - clientHeight < 300) {
+        setPage((prev) => prev + 1);
+      }
+    };
+
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [loadingMore, loading, pagination, query, activeTab]);
+
   const handleSectionChange = useCallback((section: Section) => {
     setActiveSection(section);
     setActiveTab('today');
     setPage(1);
+    setArticles([]);
   }, []);
 
   const handleTabChange = useCallback((tab: TabKey) => {
     setActiveTab(tab);
     setPage(1);
+    setArticles([]);
   }, []);
-
-  const handlePageChange = useCallback((newPage: number) => {
-    setPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
-  const handleSearchPageChange = useCallback(
-    (newPage: number) => {
-      setSearchPage(newPage);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    },
-    [setSearchPage],
-  );
 
   const isSearchActive = query.trim().length > 0;
 
@@ -152,10 +174,7 @@ export default function App() {
           </div>
           <div>
             {isSearching ? <LoadingSpinner /> : (
-              <>
-                <ArticleList articles={searchResults ?? []} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} />
-                {searchPagination && <PaginationControls pagination={searchPagination} onPageChange={handleSearchPageChange} />}
-              </>
+              <ArticleList articles={searchResults ?? []} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} />
             )}
           </div>
         </>
@@ -201,7 +220,16 @@ export default function App() {
         {loading ? <LoadingSpinner /> : (
           <>
             <ArticleList articles={articles} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} />
-            {pagination && <PaginationControls pagination={pagination} onPageChange={handlePageChange} />}
+            {loadingMore && (
+              <div className="flex justify-center py-4">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-200 border-t-accent dark:border-[#333] dark:border-t-green-400" />
+              </div>
+            )}
+            {pagination && !pagination.hasMore && articles.length > 0 && (
+              <p className="py-6 text-center text-[12px] text-gray-400 dark:text-gray-600">
+                すべての記事を表示しました
+              </p>
+            )}
           </>
         )}
       </>
@@ -231,7 +259,7 @@ export default function App() {
           onClose={() => setSidebarOpen(false)}
         />
 
-        <main className="flex-1 overflow-y-auto bg-white dark:bg-[#1a1a1a]">
+        <main ref={mainRef} className="flex-1 overflow-y-auto bg-white dark:bg-[#1a1a1a]">
           {error && (
             <div className="mx-5 mt-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-600 dark:border-red-900 dark:bg-red-900/20 dark:text-red-400">
               {error}

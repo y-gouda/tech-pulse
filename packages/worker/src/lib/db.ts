@@ -59,6 +59,26 @@ export async function getArticles(
   };
 }
 
+// Convert katakana to hiragana for kana-insensitive search
+function kataToHira(str: string): string {
+  return str.replace(/[\u30A1-\u30F6]/g, (ch) =>
+    String.fromCharCode(ch.charCodeAt(0) - 0x60)
+  );
+}
+
+// Generate search variants: original + lowercase + hiragana-converted
+function searchVariants(q: string): string[] {
+  const lower = q.toLowerCase();
+  const hira = kataToHira(lower);
+  const variants = new Set([lower, hira]);
+  // Also add katakana version
+  const kata = hira.replace(/[\u3041-\u3096]/g, (ch) =>
+    String.fromCharCode(ch.charCodeAt(0) + 0x60)
+  );
+  variants.add(kata);
+  return [...variants];
+}
+
 export async function searchArticles(
   db: D1Database,
   opts: { q: string; category?: Category; page?: number; limit?: number }
@@ -67,12 +87,23 @@ export async function searchArticles(
   const limit = opts.limit ?? 20;
   const offset = (page - 1) * limit;
 
-  let query =
-    'SELECT a.* FROM articles a JOIN articles_fts f ON a.id = f.rowid WHERE articles_fts MATCH ?';
-  let countQuery =
-    'SELECT COUNT(*) as total FROM articles a JOIN articles_fts f ON a.id = f.rowid WHERE articles_fts MATCH ?';
-  const params: unknown[] = [opts.q];
-  const countParams: unknown[] = [opts.q];
+  const variants = searchVariants(opts.q);
+
+  // Build LIKE conditions: (LOWER(title) LIKE ? OR LOWER(summary) LIKE ? OR LOWER(title) LIKE ? OR ...)
+  const likeConditions = variants
+    .map(() => '(LOWER(a.title) LIKE ? OR LOWER(a.summary) LIKE ?)')
+    .join(' OR ');
+
+  const likeParams: string[] = [];
+  for (const v of variants) {
+    const pattern = `%${v}%`;
+    likeParams.push(pattern, pattern);
+  }
+
+  let query = `SELECT a.* FROM articles a WHERE (${likeConditions})`;
+  let countQuery = `SELECT COUNT(*) as total FROM articles a WHERE (${likeConditions})`;
+  const params: unknown[] = [...likeParams];
+  const countParams: unknown[] = [...likeParams];
 
   if (opts.category) {
     query += ' AND a.category = ?';

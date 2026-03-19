@@ -46,10 +46,7 @@ articles.get('/api/articles/search', async (c) => {
   const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
   const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 100) : 20;
 
-  // Sanitize FTS query: wrap in quotes to prevent FTS5 operator injection
-  const safeQ = `"${q.replace(/"/g, '""')}"`;
-
-  const result = await searchArticles(c.env.DB, { q: safeQ, category, page, limit });
+  const result = await searchArticles(c.env.DB, { q, category, page, limit });
 
   return c.json({ ok: true, data: result });
 });

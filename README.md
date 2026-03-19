@@ -12,7 +12,7 @@ Feedly風UIのRSSニュースアグリゲーター。Cloudflare Workers + Pages 
 - **ブックマーク** — localStorageに保存（認証不要）
 - **ダークモード** — OS設定に追従 + 手動切替
 - **レスポンシブ** — モバイル対応
-- **2時間ごと自動更新** — Cron Triggersで20ソースから記事を収集
+- **30分ごと自動更新** — Cron Triggersで20ソースから記事を収集
 
 ## 技術スタック
 

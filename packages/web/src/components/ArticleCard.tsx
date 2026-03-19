@@ -6,13 +6,13 @@ interface ArticleCardProps {
   onToggleBookmark: (article: Article) => void;
 }
 
-const categoryColors: Record<Category, string> = {
-  programming: 'text-green-600 dark:text-green-400',
-  'ai-ml': 'text-purple-600 dark:text-purple-400',
-  'infra-cloud': 'text-orange-600 dark:text-orange-400',
-  economy: 'text-amber-600 dark:text-amber-400',
-  politics: 'text-red-600 dark:text-red-400',
-  science: 'text-cyan-600 dark:text-cyan-400',
+const categoryBadge: Record<Category, { label: string; className: string }> = {
+  programming: { label: 'Dev', className: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' },
+  'ai-ml': { label: 'AI', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-400' },
+  'infra-cloud': { label: 'Infra', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400' },
+  economy: { label: '経済', className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400' },
+  politics: { label: '社会', className: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400' },
+  science: { label: '科学', className: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-400' },
 };
 
 function formatRelativeTime(dateString: string): string {
@@ -57,7 +57,10 @@ export default function ArticleCard({ article, isBookmarked, onToggleBookmark }:
 
       {/* Meta + summary line */}
       <div className="flex items-center gap-1.5 text-[12px]">
-        <span className={`font-medium ${categoryColors[article.category]}`}>{domain}</span>
+        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold leading-none ${categoryBadge[article.category].className}`}>
+          {categoryBadge[article.category].label}
+        </span>
+        <span className="text-gray-500 dark:text-gray-400">{domain}</span>
         <span className="text-gray-300 dark:text-gray-600">/</span>
         <time className="text-gray-400 dark:text-gray-500">{formatRelativeTime(article.published_at)}</time>
         {article.author && (
