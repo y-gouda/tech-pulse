@@ -1,0 +1,15 @@
+name = "tech-pulse-worker"
+main = "packages/worker/src/index.ts"
+compatibility_date = "2024-12-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tech-pulse-db"
+database_id = "f64be92f-497a-459a-93e0-3230b854f983"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "2848133ec1634dfb8dc21d7405546212"
+
+[triggers]
+crons = ["0 */2 * * *", "5 0 * * *"]

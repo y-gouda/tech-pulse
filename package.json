@@ -1,0 +1,20 @@
+{
+  "name": "tech-pulse",
+  "private": true,
+  "workspaces": [
+    "packages/worker",
+    "packages/web"
+  ],
+  "scripts": {
+    "dev:worker": "npm run dev -w packages/worker",
+    "dev:web": "npm run dev -w packages/web",
+    "build:web": "npm run build -w packages/web",
+    "deploy:worker": "npx wrangler deploy",
+    "deploy:web": "npm run build:web && npx wrangler pages deploy packages/web/dist --project-name rss-reader --commit-dirty=true",
+    "deploy": "npm run deploy:worker && npm run deploy:web && npm run cron:fetch",
+    "cron:fetch": "node -e \"fetch('https://tech-pulse-worker.rss-reader.workers.dev/api/cron/fetch',{method:'POST',headers:{'X-Cron-Secret':require('fs').readFileSync('.dev.vars','utf8').match(/CRON_SECRET=(.+)/)[1].trim()}}).then(r=>r.json()).then(console.log)\"",
+    "db:local": "npx wrangler d1 execute tech-pulse-db --local --file=./db/schema.sql",
+    "db:local:reset": "rm -rf .wrangler/state/v3/d1 && npm run db:local",
+    "db:remote": "npx wrangler d1 execute tech-pulse-db --remote --file=./db/schema.sql"
+  }
+}

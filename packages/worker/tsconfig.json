@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["@cloudflare/workers-types"],
+    "lib": ["ES2022"],
+    "jsx": "react-jsx",
+    "paths": {
+      "@tech-pulse/shared/*": ["../../shared/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "../../shared/**/*.ts"]
+}
