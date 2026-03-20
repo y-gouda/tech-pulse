@@ -50,8 +50,8 @@ export default function TrendingBar({ section, onKeywordClick, fontSize }: Trend
 
   if (keywords.length === 0) return null;
 
-  const badgeTextSize = fontSize === 'normal' ? 'text-[11px]' : fontSize === 'large' ? 'text-[12px]' : 'text-[13px]';
-  const labelTextSize = fontSize === 'normal' ? 'text-[10px]' : fontSize === 'large' ? 'text-[11px]' : 'text-[12px]';
+  const badgeTextSize = fontSize === 'normal' ? 'text-[13px]' : fontSize === 'large' ? 'text-[14px]' : 'text-[15px]';
+  const labelTextSize = fontSize === 'normal' ? 'text-[12px]' : fontSize === 'large' ? 'text-[13px]' : 'text-[14px]';
 
   return (
     <div className="border-b border-gray-200 px-6 py-3 dark:border-[#333]">
