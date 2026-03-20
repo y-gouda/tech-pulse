@@ -85,7 +85,7 @@ export async function handleTrending(env: Env): Promise<void> {
   const TECH_CATS: Category[] = ['programming', 'ai-ml', 'infra-cloud'];
   const NEWS_CATS: Category[] = ['economy', 'politics', 'science', 'sports'];
 
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const since = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
 
   for (const [section, cats] of [['tech', TECH_CATS], ['news', NEWS_CATS]] as const) {
     const placeholders = cats.map(() => '?').join(',');
