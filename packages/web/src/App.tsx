@@ -198,7 +198,7 @@ export default function App() {
             <p className="mt-1 text-[14px] text-gray-400 dark:text-gray-500">{sectionSubtitle}</p>
           </div>
           {todayLoading ? <LoadingSpinner /> : (
-            <TodayView articles={todayArticles} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} fontSize={fontSize} />
+            <ArticleList articles={todayArticles} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} fontSize={fontSize} />
           )}
         </>
       );
