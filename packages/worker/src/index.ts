@@ -47,8 +47,8 @@ app.post('/api/cron/fetch', async (c) => {
   if (!c.env.CRON_SECRET || secret !== c.env.CRON_SECRET) {
     return c.json({ ok: false, error: 'Unauthorized' }, 401);
   }
-  await handleFetchFeeds(c.env);
-  return c.json({ ok: true, data: { message: 'Feed fetch completed' } });
+  c.executionCtx.waitUntil(handleFetchFeeds(c.env));
+  return c.json({ ok: true, data: { message: 'Feed fetch started' } });
 });
 
 app.post('/api/cron/trending', async (c) => {
@@ -56,7 +56,7 @@ app.post('/api/cron/trending', async (c) => {
   if (!c.env.CRON_SECRET || secret !== c.env.CRON_SECRET) {
     return c.json({ ok: false, error: 'Unauthorized' }, 401);
   }
-  await handleTrending(c.env);
+  c.executionCtx.waitUntil(handleTrending(c.env));
   return c.json({ ok: true, data: { message: 'Trending update started' } });
 });
 
