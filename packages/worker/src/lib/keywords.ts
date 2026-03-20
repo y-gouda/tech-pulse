@@ -24,39 +24,58 @@ function isLatin(char: string): boolean {
   // A-Z, a-z, 0-9, hyphen, dot
 }
 
+// --- Character type classification ---
+
+function isKanji(char: string): boolean {
+  const code = char.codePointAt(0)!;
+  return (code >= 0x4E00 && code <= 0x9FFF) || (code >= 0xF900 && code <= 0xFAFF)
+    || (code >= 0x3400 && code <= 0x4DBF);
+}
+
 // --- Run splitting ---
 
+type RunType = 'latin' | 'katakana' | 'kanji';
+
 interface TextRun {
-  type: 'cjk' | 'latin';
+  type: RunType;
   text: string;
+}
+
+function charRunType(char: string): RunType | null {
+  if (isLatin(char)) return 'latin';
+  if (isKatakana(char)) return 'katakana';
+  if (isKanji(char)) return 'kanji';
+  return null; // hiragana, punctuation, spaces, etc.
 }
 
 function splitRuns(text: string): TextRun[] {
   const runs: TextRun[] = [];
-  let currentType: 'cjk' | 'latin' | null = null;
+  let currentType: RunType | null = null;
   let currentText = '';
 
   for (const char of text) {
-    if (isCJK(char)) {
-      if (currentType === 'latin' && currentText) {
-        runs.push({ type: 'latin', text: currentText });
-        currentText = '';
+    const type = charRunType(char);
+
+    if (type !== null) {
+      if (type === currentType) {
+        currentText += char;
+      } else if (type === 'latin' && currentType === 'latin') {
+        // shouldn't reach here, but just in case
+        currentText += char;
+      } else {
+        // Type changed — flush previous run
+        if (currentType && currentText) {
+          runs.push({ type: currentType, text: currentText.trim() });
+        }
+        currentType = type;
+        currentText = char;
       }
-      currentType = 'cjk';
-      currentText += char;
-    } else if (isLatin(char)) {
-      if (currentType === 'cjk' && currentText) {
-        runs.push({ type: 'cjk', text: currentText });
-        currentText = '';
-      }
-      currentType = 'latin';
-      currentText += char;
     } else {
       // Space within a Latin run: keep it (enables multi-word N-grams like "Claude Code")
       if (char === ' ' && currentType === 'latin') {
         currentText += char;
       } else {
-        // Other separators: flush current run
+        // Other separators (hiragana, punctuation): flush current run
         if (currentType && currentText) {
           runs.push({ type: currentType, text: currentText.trim() });
           currentText = '';
@@ -67,7 +86,7 @@ function splitRuns(text: string): TextRun[] {
   }
 
   if (currentType && currentText) {
-    runs.push({ type: currentType, text: currentText });
+    runs.push({ type: currentType, text: currentText.trim() });
   }
 
   return runs;
@@ -122,30 +141,36 @@ function tokenizeLatin(text: string): string[] {
   return ngrams;
 }
 
-function isKanaOnly(text: string): boolean {
-  for (const char of text) {
-    if (!isHiragana(char) && !isKatakana(char)) return false;
-  }
-  return true;
+/** Katakana stopwords (common but meaningless katakana words) */
+const KATAKANA_STOPWORDS = new Set([
+  'オン', 'ザ', 'アン', 'フォー', 'ウィズ', 'イン',
+]);
+
+/** Tokenize a katakana run: treat as a whole word (like Latin unigrams) */
+function tokenizeKatakana(text: string): string[] {
+  // Katakana runs are whole words (e.g., "オンライン", "リリース", "コンテナ")
+  // Only include if 2+ characters and not a stopword
+  if (text.length < 2) return [];
+  if (KATAKANA_STOPWORDS.has(text)) return [];
+  return [text];
 }
 
-function tokenizeCJK(text: string): string[] {
-  const chars = [...text]; // handle surrogate pairs
-  const ngrams: string[] = [];
+/** Tokenize a kanji run: treat as whole word (compound noun) */
+function tokenizeKanji(text: string): string[] {
+  const chars = [...text];
+  if (chars.length < 2) return [];
 
-  // 2-grams
-  for (let i = 0; i < chars.length - 1; i++) {
-    const gram = chars[i] + chars[i + 1];
-    if (!(isKanaOnly(gram) && gram.length <= 2 && JA_STOPWORDS.has(gram))) {
-      ngrams.push(gram);
+  // Kanji runs are compound nouns: 開発, 生成, 人工知能, 東洋経済
+  // Treat as whole word. For long runs (5+), also extract 2-3 char sub-compounds.
+  // For 4-char runs, only the whole word (e.g., 東洋経済, 人工知能)
+  const ngrams: string[] = [text];
+
+  if (chars.length >= 5) {
+    for (let i = 0; i < chars.length - 1; i++) {
+      ngrams.push(chars[i] + chars[i + 1]);
     }
-  }
-
-  // 3-grams
-  for (let i = 0; i < chars.length - 2; i++) {
-    const gram = chars[i] + chars[i + 1] + chars[i + 2];
-    if (!JA_STOPWORDS.has(gram)) {
-      ngrams.push(gram);
+    for (let i = 0; i < chars.length - 2; i++) {
+      ngrams.push(chars[i] + chars[i + 1] + chars[i + 2]);
     }
   }
 
@@ -226,7 +251,9 @@ export function extractKeywords(
     for (const run of runs) {
       const ngrams = run.type === 'latin'
         ? tokenizeLatin(run.text)
-        : tokenizeCJK(run.text);
+        : run.type === 'katakana'
+          ? tokenizeKatakana(run.text)
+          : tokenizeKanji(run.text);
 
       for (const ngram of ngrams) {
         // Dedupe within same title
@@ -243,11 +270,15 @@ export function extractKeywords(
     }
   }
 
-  // Filter: must appear in at least 2 articles, exclude pure-digit ngrams
+  // Filter: must appear in 2+ articles but not in >15% of all articles (too generic/source names),
+  // exclude pure-digit ngrams and single-char ngrams
+  const maxArticles = Math.max(Math.floor(titles.length * 0.15), 5);
   const occurrences: NgramOccurrence[] = [];
   for (const [ngram, indices] of ngramMap) {
     if (indices.size < 2) continue;
+    if (indices.size > maxArticles) continue;
     if (/^\d+$/.test(ngram)) continue;
+    if ([...ngram].length < 2) continue;
     occurrences.push({ ngram, articleIndices: indices });
   }
 

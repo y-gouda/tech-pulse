@@ -38,7 +38,7 @@ export default function TrendingBar({ section, onKeywordClick, fontSize }: Trend
       <div className="border-b border-gray-200 px-6 py-3 dark:border-[#333]">
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-medium tracking-wide text-gray-400 uppercase dark:text-gray-500">
-            トレンド
+            🔥 トレンド
           </span>
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-6 w-16 animate-pulse rounded-full bg-gray-100 dark:bg-[#2a2a2a]" />
