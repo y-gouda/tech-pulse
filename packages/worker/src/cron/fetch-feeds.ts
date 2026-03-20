@@ -75,34 +75,31 @@ export async function handleFetchFeeds(env: Env): Promise<void> {
 
   // Invalidate all article caches after inserting new data
   await invalidateCache(env.CACHE, '/api/articles');
+}
 
-  // Extract trending keywords (failure here must not affect feed fetching)
-  try {
-    const TECH_CATS: Category[] = ['programming', 'ai-ml', 'infra-cloud'];
-    const NEWS_CATS: Category[] = ['economy', 'politics', 'science'];
+export async function handleTrending(env: Env): Promise<void> {
+  const TECH_CATS: Category[] = ['programming', 'ai-ml', 'infra-cloud'];
+  const NEWS_CATS: Category[] = ['economy', 'politics', 'science'];
 
-    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-    for (const [section, cats] of [['tech', TECH_CATS], ['news', NEWS_CATS]] as const) {
-      const placeholders = cats.map(() => '?').join(',');
-      const stmt = env.DB.prepare(
-        `SELECT title FROM articles WHERE category IN (${placeholders}) AND published_at > ? ORDER BY published_at DESC`
-      );
-      const { results } = await stmt.bind(...cats, since).all<{ title: string }>();
-      const titles = (results ?? []).map((r) => r.title);
-      const keywords = extractKeywords(titles, 10);
+  for (const [section, cats] of [['tech', TECH_CATS], ['news', NEWS_CATS]] as const) {
+    const placeholders = cats.map(() => '?').join(',');
+    const stmt = env.DB.prepare(
+      `SELECT title FROM articles WHERE category IN (${placeholders}) AND published_at > ? ORDER BY published_at DESC`
+    );
+    const { results } = await stmt.bind(...cats, since).all<{ title: string }>();
+    const titles = (results ?? []).map((r) => r.title);
+    const keywords = extractKeywords(titles, 10);
 
-      await env.CACHE.put(
-        `trending:${section}`,
-        JSON.stringify({ keywords, updatedAt: new Date().toISOString() }),
-        { expirationTtl: 7200 }
-      );
-    }
-
-    console.log('Trending keywords updated');
-  } catch (err) {
-    console.error('Trending keyword extraction failed:', err);
+    await env.CACHE.put(
+      `trending:${section}`,
+      JSON.stringify({ keywords, updatedAt: new Date().toISOString() }),
+      { expirationTtl: 7200 }
+    );
   }
+
+  console.log('Trending keywords updated');
 }
 
 export async function handleCleanup(env: Env): Promise<void> {

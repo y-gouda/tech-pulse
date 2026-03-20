@@ -4,7 +4,7 @@ import articles from './routes/articles';
 import feeds from './routes/feeds';
 import health from './routes/health';
 import trending from './routes/trending';
-import { handleFetchFeeds, handleCleanup } from './cron/fetch-feeds';
+import { handleFetchFeeds, handleTrending, handleCleanup } from './cron/fetch-feeds';
 
 export interface Env {
   DB: D1Database;
@@ -51,6 +51,15 @@ app.post('/api/cron/fetch', async (c) => {
   return c.json({ ok: true, data: { message: 'Feed fetch started' } });
 });
 
+app.post('/api/cron/trending', async (c) => {
+  const secret = c.req.header('X-Cron-Secret');
+  if (!c.env.CRON_SECRET || secret !== c.env.CRON_SECRET) {
+    return c.json({ ok: false, error: 'Unauthorized' }, 401);
+  }
+  c.executionCtx.waitUntil(handleTrending(c.env));
+  return c.json({ ok: true, data: { message: 'Trending update started' } });
+});
+
 // Mount route groups
 app.route('/', articles);
 app.route('/', feeds);
@@ -63,6 +72,9 @@ export default {
     switch (event.cron) {
       case '*/30 * * * *':
         ctx.waitUntil(handleFetchFeeds(env));
+        break;
+      case '15,45 * * * *':
+        ctx.waitUntil(handleTrending(env));
         break;
       case '5 0 * * *':
         ctx.waitUntil(handleCleanup(env));
