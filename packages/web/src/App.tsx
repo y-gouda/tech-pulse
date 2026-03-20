@@ -158,8 +158,8 @@ export default function App() {
   };
 
   const sectionSubtitle = activeSection === 'tech'
-    ? '最新のテックニュースをチェック'
-    : '最新のニュースをチェック';
+    ? '直近24時間のテック記事'
+    : '直近24時間のニュース';
 
   const renderContent = () => {
     if (isSearchActive) {
