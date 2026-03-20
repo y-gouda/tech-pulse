@@ -59,3 +59,13 @@ export const CATEGORIES: { key: Category | 'all'; label: string }[] = [
   { key: 'politics', label: '政治・社会' },
   { key: 'science', label: '科学' },
 ];
+
+export interface TrendingKeyword {
+  keyword: string;
+  count: number;
+}
+
+export interface TrendingData {
+  keywords: TrendingKeyword[];
+  updatedAt: string | null;
+}
