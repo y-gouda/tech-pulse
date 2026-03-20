@@ -27,19 +27,31 @@
 1. D1から直近24時間の記事タイトルをセクション別に取得
    - tech: `category IN ('programming', 'ai-ml', 'infra-cloud')`
    - news: `category IN ('economy', 'politics', 'science')`
-2. 各タイトルからN-gram（1〜3語）を生成
-   - 英語: スペース区切りでトークン化
-   - ストップワード（"the", "a", "is", "in", "for", "and", "or", "to", "of", "with", "on", "at", "by", "from" 等）を除外
-   - 1語、2語連続、3語連続の組み合わせを生成
+   - 想定データ量: 20ソース × 30分毎 × 24時間 ≒ 数百〜千タイトル程度。D1 free tier（5M reads/日）に余裕あり
+2. 各タイトルをトークン化（日本語・英語ハイブリッド対応）
+   - **言語判定**: Unicode文字クラスで判定。CJK文字（`\u3000-\u9FFF`, `\uF900-\uFAFF`）を含むランをCJK、Latin文字ランを英語として分離処理
+   - **英語テキスト**: スペース区切りでトークン化。句読点を除去。小文字化
+   - **日本語テキスト**: 文字レベルbi-gram/tri-gramを生成（形態素解析不要でCF Workers上で動作可能）。ひらがな・カタカナのみの2文字以下トークンは除外（助詞ノイズ防止）
+   - **混合テキスト**: ラン単位で分離処理（例: "Rustで作るWebアプリ" → Latin "Rust" + CJK "で作る", "作るW" はスキップ + Latin "Web" + CJK "アプリ"）
+   - **ストップワード除外**:
+     - 英語: "the", "a", "an", "is", "are", "was", "were", "in", "for", "and", "or", "to", "of", "with", "on", "at", "by", "from", "it", "its", "this", "that", "how", "what", "why", "new", "your", "you" 等
+     - 日本語（ひらがなのみの短いトークン）: "の", "は", "が", "を", "で", "に", "と", "も", "へ", "から", "まで", "より", "など", "した", "する", "ある", "いる", "この", "その", "それ" 等
+   - **英語N-gram**: 1語、2語連続、3語連続を生成
 3. 出現頻度でソートし上位10個を選出
    - 1文字のみのトークン、数字のみのトークンは除外
-   - 短いN-gramが長いN-gramに完全包含される場合、長い方を優先（例: "Claude" < "Claude Code"）
+   - **サブサンプション（包含除去）アルゴリズム**:
+     1. 全N-gramを出現回数降順でソート
+     2. 上位から順に確定リストに追加
+     3. 追加時に、既に確定済みのより長いN-gramに80%以上包含されているか判定（短いN-gramの出現回数のうち80%以上が長いN-gramと同じ記事に出現）
+     4. 80%以上包含されていれば、短い方をスキップ（独立した出現が少ないため）
+     5. 80%未満なら両方を残す（例: "Claude" が "Claude Code" 以外にも独立して多く出現する場合）
+   - **同数時のタイブレーク**: N-gramの長さ降順（長い方が具体的で有用）。同長なら辞書順
 4. 結果をKVに保存
    - キー: `trending:tech`, `trending:news`
    - 値: `{ keywords: [{ keyword: string, count: number }], updatedAt: string }`
-   - TTL: 3600秒（1時間。Cronが30分毎なので十分）
+   - TTL: 7200秒（2時間。Cronが30分毎だが、複数回失敗してもデータが消えないよう余裕を持たせる）
 
-**実装場所:** `packages/worker/src/cron/fetch-feeds.ts` の `handleFetchFeeds()` 末尾
+**実装場所:** `packages/worker/src/cron/fetch-feeds.ts` の `handleFetchFeeds()` 末尾。try/catchで囲み、キーワード抽出の失敗が既存の記事取得処理に影響しないようにする
 
 **キーワード抽出ロジック:** `packages/worker/src/lib/keywords.ts`（新規作成）
 
@@ -49,6 +61,7 @@
 
 - ルートファイル: `packages/worker/src/routes/trending.ts`（新規作成）
 - クエリパラメータ: `section` (必須, `tech` | `news`)
+- バリデーション: `section` が未指定または `tech`/`news` 以外の場合は 400 エラーを返す
 - KVから該当セクションの結果を返すのみ（DB問い合わせなし、軽量）
 - レスポンス:
 
@@ -93,7 +106,7 @@ interface TrendingBarProps {
 - 横スクロール可能なバー（`overflow-x: auto`, スクロールバー非表示）
 - 各キーワードはバッジ形式（ピル型、背景色付き）
 - キーワード名 + 件数を表示
-- 先頭に「Trending」ラベル
+- 先頭に「トレンド」ラベル（UIは日本語で統一）
 
 **動作:**
 
@@ -106,24 +119,17 @@ interface TrendingBarProps {
 
 - `TrendingBar` を Header と記事一覧の間に配置
 - `activeSection` を `section` propとして渡す
-- `onKeywordClick` で既存の `handleSearch` を呼び出し（検索クエリをセット）
+- `onKeywordClick` で `setQuery(keyword)` を呼び出し、`useSearch` フックの検索フローをトリガー。検索は現在のセクションのカテゴリにスコープされる
 
 ### APIクライアント
 
 **ファイル:** `packages/web/src/api/client.ts` に追加
 
 ```typescript
-interface TrendingKeyword {
-  keyword: string
-  count: number
-}
+// 型は shared/types.ts から import（重複定義しない）
+import type { TrendingData } from '../../../shared/types'
 
-interface TrendingResponse {
-  keywords: TrendingKeyword[]
-  updatedAt: string | null
-}
-
-function fetchTrending(section: 'tech' | 'news'): Promise<TrendingResponse>
+function fetchTrending(section: 'tech' | 'news'): Promise<TrendingData>
 ```
 
 ## 共有型定義
@@ -157,7 +163,7 @@ Cron(30分毎)
   → TrendingBar にキーワード表示
 
 キーワードクリック
-  → onKeywordClick → handleSearch(keyword) → 検索結果表示
+  → onKeywordClick → setQuery(keyword) → useSearch による検索実行（現セクションにスコープ）
 ```
 
 ## ファイル変更一覧
@@ -174,7 +180,14 @@ Cron(30分毎)
 - `packages/web/src/api/client.ts` — fetchTrending() 追加
 - `shared/types.ts` — TrendingKeyword, TrendingData 型追加
 
+## 注意事項
+
+- **Cron失敗時の分離**: キーワード抽出処理は try/catch で囲む。失敗しても既存の記事取得フローには影響しない
+- **KVキャッシュの独立性**: trending KVキー（`trending:*`）は既存の `invalidateCache` の対象外。TTL自然消滅 + Cronによる上書きで管理
+- **Section型の共有**: `Section` 型（`'tech' | 'news'`）を `shared/types.ts` に追加し、フロント・バック双方で利用
+- **初回デプロイ**: Cronが初回実行されるまで（最大30分）TrendingBarは非表示
+
 ## テスト方針
 
-- キーワード抽出ロジック: 単体テスト（N-gram生成、ストップワード除外、ランキング）
+- キーワード抽出ロジック: 単体テスト（N-gram生成、ストップワード除外、日本語/英語/混合テキスト、サブサンプション、ランキング）
 - 手動確認: Cronトリガー後にAPIレスポンスを確認、フロントで表示を確認
