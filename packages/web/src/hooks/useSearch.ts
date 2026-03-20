@@ -10,8 +10,12 @@ export function useSearch() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchCategory, setSearchCategory] = useState<Category | 'all'>('all');
   const [searchCategories, setSearchCategories] = useState<Category[] | undefined>(undefined);
+  const searchCategoriesRef = useRef<Category[] | undefined>(undefined);
   const [searchPage, setSearchPage] = useState(1);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Keep ref in sync with state
+  searchCategoriesRef.current = searchCategories;
 
   // Debounce query
   useEffect(() => {
@@ -28,17 +32,17 @@ export function useSearch() {
       setResults(null);
       setPagination(null);
       setIsSearching(false);
-      setSearchCategories(undefined);
       return;
     }
 
     let cancelled = false;
     setIsSearching(true);
 
+    const cats = searchCategoriesRef.current;
     searchArticles({
       q: debouncedQuery,
-      category: searchCategories ? undefined : searchCategory,
-      categories: searchCategories,
+      category: cats ? undefined : searchCategory,
+      categories: cats,
       page: searchPage,
     })
       .then((res) => {
@@ -60,7 +64,7 @@ export function useSearch() {
     return () => {
       cancelled = true;
     };
-  }, [debouncedQuery, searchCategory, searchCategories, searchPage]);
+  }, [debouncedQuery, searchCategory, searchPage]);
 
   const setSearchPageCb = useCallback((page: number) => {
     setSearchPage(page);
