@@ -14,7 +14,9 @@ function isHiragana(char: string): boolean {
 
 function isKatakana(char: string): boolean {
   const code = char.codePointAt(0)!;
-  return code >= 0x30A0 && code <= 0x30FF;
+  return (code >= 0x30A0 && code <= 0x30FF)
+    || code === 0x30FC   // ー (prolonged sound mark)
+    || code === 0x30FB;  // ・ (middle dot, used in katakana compounds)
 }
 
 function isLatin(char: string): boolean {
@@ -148,33 +150,17 @@ const KATAKANA_STOPWORDS = new Set([
 
 /** Tokenize a katakana run: treat as a whole word (like Latin unigrams) */
 function tokenizeKatakana(text: string): string[] {
-  // Katakana runs are whole words (e.g., "オンライン", "リリース", "コンテナ")
-  // Only include if 2+ characters and not a stopword
-  if (text.length < 2) return [];
-  if (KATAKANA_STOPWORDS.has(text)) return [];
-  return [text];
+  // Trim middle dots (・) from edges — they join katakana to non-katakana
+  const trimmed = text.replace(/^・+|・+$/g, '');
+  if ([...trimmed].length < 2) return [];
+  if (KATAKANA_STOPWORDS.has(trimmed)) return [];
+  return [trimmed];
 }
 
-/** Tokenize a kanji run: treat as whole word (compound noun) */
+/** Tokenize a kanji run: treat entire run as one compound noun */
 function tokenizeKanji(text: string): string[] {
-  const chars = [...text];
-  if (chars.length < 2) return [];
-
-  // Kanji runs are compound nouns: 開発, 生成, 人工知能, 東洋経済
-  // Treat as whole word. For long runs (5+), also extract 2-3 char sub-compounds.
-  // For 4-char runs, only the whole word (e.g., 東洋経済, 人工知能)
-  const ngrams: string[] = [text];
-
-  if (chars.length >= 5) {
-    for (let i = 0; i < chars.length - 1; i++) {
-      ngrams.push(chars[i] + chars[i + 1]);
-    }
-    for (let i = 0; i < chars.length - 2; i++) {
-      ngrams.push(chars[i] + chars[i + 1] + chars[i + 2]);
-    }
-  }
-
-  return ngrams;
+  if ([...text].length < 2) return [];
+  return [text];
 }
 
 // --- Subsumption ---
