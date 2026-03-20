@@ -57,7 +57,7 @@ export default function TrendingBar({ section, onKeywordClick, fontSize }: Trend
     <div className="border-b border-gray-200 px-6 py-3 dark:border-[#333]">
       <div className="scrollbar-hide flex items-center gap-2 overflow-x-auto">
         <span className={`${labelTextSize} shrink-0 font-medium tracking-wide text-gray-400 uppercase dark:text-gray-500`}>
-          トレンド
+          🔥 トレンド
         </span>
         {keywords.map((kw) => (
           <button
