@@ -247,7 +247,7 @@ export default function App() {
         onToggleTheme={toggleTheme}
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
         query={query}
-        onQueryChange={setQuery}
+        onQueryChange={(q) => { setSearchCategories(undefined); setQuery(q); }}
         fontSize={fontSize}
         fontSizeLabel={fontSizeLabel}
         onCycleFontSize={cycleFontSize}

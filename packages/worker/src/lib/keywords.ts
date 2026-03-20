@@ -116,28 +116,30 @@ const JA_STOPWORDS = new Set([
 
 // --- Tokenizers ---
 
-function tokenizeLatin(text: string): string[] {
-  // Split on spaces, clean punctuation, lowercase
-  const words = text
+/** Returns [lowercaseKey, originalForm] pairs for Latin N-grams */
+function tokenizeLatin(text: string): [string, string][] {
+  const rawWords = text
     .split(/[\s.]+/)
-    .map((w) => w.replace(/[^a-zA-Z0-9\-]/g, '').toLowerCase())
-    .filter((w) => w.length >= 2 && !EN_STOPWORDS.has(w) && !/^\d+$/.test(w));
+    .map((w) => w.replace(/[^a-zA-Z0-9\-]/g, ''))
+    .filter((w) => w.length >= 2 && !EN_STOPWORDS.has(w.toLowerCase()) && !/^\d+$/.test(w));
 
-  const ngrams: string[] = [];
+  const ngrams: [string, string][] = [];
 
   // 1-grams
-  for (const w of words) {
-    ngrams.push(w);
+  for (const w of rawWords) {
+    ngrams.push([w.toLowerCase(), w]);
   }
 
   // 2-grams
-  for (let i = 0; i < words.length - 1; i++) {
-    ngrams.push(`${words[i]} ${words[i + 1]}`);
+  for (let i = 0; i < rawWords.length - 1; i++) {
+    const original = `${rawWords[i]} ${rawWords[i + 1]}`;
+    ngrams.push([original.toLowerCase(), original]);
   }
 
   // 3-grams
-  for (let i = 0; i < words.length - 2; i++) {
-    ngrams.push(`${words[i]} ${words[i + 1]} ${words[i + 2]}`);
+  for (let i = 0; i < rawWords.length - 2; i++) {
+    const original = `${rawWords[i]} ${rawWords[i + 1]} ${rawWords[i + 2]}`;
+    ngrams.push([original.toLowerCase(), original]);
   }
 
   return ngrams;
@@ -148,19 +150,18 @@ const KATAKANA_STOPWORDS = new Set([
   'オン', 'ザ', 'アン', 'フォー', 'ウィズ', 'イン',
 ]);
 
-/** Tokenize a katakana run: treat as a whole word (like Latin unigrams) */
-function tokenizeKatakana(text: string): string[] {
-  // Trim middle dots (・) from edges — they join katakana to non-katakana
+/** Returns [key, originalForm] pairs for katakana */
+function tokenizeKatakana(text: string): [string, string][] {
   const trimmed = text.replace(/^・+|・+$/g, '');
   if ([...trimmed].length < 2) return [];
   if (KATAKANA_STOPWORDS.has(trimmed)) return [];
-  return [trimmed];
+  return [[trimmed, trimmed]];
 }
 
-/** Tokenize a kanji run: treat entire run as one compound noun */
-function tokenizeKanji(text: string): string[] {
+/** Returns [key, originalForm] pairs for kanji */
+function tokenizeKanji(text: string): [string, string][] {
   if ([...text].length < 2) return [];
-  return [text];
+  return [[text, text]];
 }
 
 // --- Subsumption ---
@@ -226,8 +227,8 @@ export function extractKeywords(
 ): { keyword: string; count: number }[] {
   if (titles.length === 0) return [];
 
-  // Map: ngram -> set of article indices
-  const ngramMap = new Map<string, Set<number>>();
+  // Map: lowercaseKey -> { articleIndices, originalForms (track most common casing) }
+  const ngramMap = new Map<string, { articleIndices: Set<number>; forms: Map<string, number> }>();
 
   for (let i = 0; i < titles.length; i++) {
     const title = titles[i];
@@ -241,16 +242,19 @@ export function extractKeywords(
           ? tokenizeKatakana(run.text)
           : tokenizeKanji(run.text);
 
-      for (const ngram of ngrams) {
-        // Dedupe within same title
-        if (seenInThisTitle.has(ngram)) continue;
-        seenInThisTitle.add(ngram);
+      for (const [key, original] of ngrams) {
+        if (seenInThisTitle.has(key)) continue;
+        seenInThisTitle.add(key);
 
-        const existing = ngramMap.get(ngram);
+        const existing = ngramMap.get(key);
         if (existing) {
-          existing.add(i);
+          existing.articleIndices.add(i);
+          existing.forms.set(original, (existing.forms.get(original) ?? 0) + 1);
         } else {
-          ngramMap.set(ngram, new Set([i]));
+          ngramMap.set(key, {
+            articleIndices: new Set([i]),
+            forms: new Map([[original, 1]]),
+          });
         }
       }
     }
@@ -260,13 +264,27 @@ export function extractKeywords(
   // exclude pure-digit ngrams and single-char ngrams
   const maxArticles = Math.max(Math.floor(titles.length * 0.15), 5);
   const occurrences: NgramOccurrence[] = [];
-  for (const [ngram, indices] of ngramMap) {
-    if (indices.size < 2) continue;
-    if (indices.size > maxArticles) continue;
-    if (/^\d+$/.test(ngram)) continue;
-    if ([...ngram].length < 2) continue;
-    occurrences.push({ ngram, articleIndices: indices });
+  for (const [key, data] of ngramMap) {
+    if (data.articleIndices.size < 2) continue;
+    if (data.articleIndices.size > maxArticles) continue;
+    if (/^\d+$/.test(key)) continue;
+    if ([...key].length < 2) continue;
+    occurrences.push({ ngram: key, articleIndices: data.articleIndices });
   }
 
-  return applySubsumption(occurrences, limit);
+  const ranked = applySubsumption(occurrences, limit);
+
+  // Resolve display form: use the most common original casing
+  return ranked.map((r) => {
+    const data = ngramMap.get(r.keyword)!;
+    let bestForm = r.keyword;
+    let bestCount = 0;
+    for (const [form, count] of data.forms) {
+      if (count > bestCount) {
+        bestForm = form;
+        bestCount = count;
+      }
+    }
+    return { keyword: bestForm, count: r.count };
+  });
 }
