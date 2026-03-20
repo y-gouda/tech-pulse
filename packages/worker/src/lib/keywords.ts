@@ -52,16 +52,17 @@ function splitRuns(text: string): TextRun[] {
       currentType = 'latin';
       currentText += char;
     } else {
-      // Separator (space, punctuation, etc.) — flush current run
-      if (currentType && currentText) {
-        runs.push({ type: currentType, text: currentText });
-        currentText = '';
-      }
-      // For latin, space is a word separator — keep it
+      // Space within a Latin run: keep it (enables multi-word N-grams like "Claude Code")
       if (char === ' ' && currentType === 'latin') {
-        // We already flushed; next latin char starts fresh
+        currentText += char;
+      } else {
+        // Other separators: flush current run
+        if (currentType && currentText) {
+          runs.push({ type: currentType, text: currentText.trim() });
+          currentText = '';
+        }
+        currentType = null;
       }
-      currentType = null;
     }
   }
 
@@ -148,7 +149,7 @@ function tokenizeCJK(text: string): string[] {
     }
   }
 
-  return ngrams.filter((g) => !JA_STOPWORDS.has(g));
+  return ngrams;
 }
 
 // --- Subsumption ---
