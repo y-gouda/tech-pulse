@@ -97,12 +97,17 @@ function splitRuns(text: string): TextRun[] {
 // --- Stopwords ---
 
 const EN_STOPWORDS = new Set([
+  // Grammar
   'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been',
   'in', 'for', 'and', 'or', 'to', 'of', 'with', 'on', 'at',
   'by', 'from', 'it', 'its', 'this', 'that', 'how', 'what',
   'why', 'new', 'your', 'you', 'can', 'will', 'has', 'have',
   'not', 'but', 'all', 'more', 'about', 'up', 'out', 'so',
   'no', 'just', 'than', 'into', 'over', 'after', 'also',
+  // Generic tech/content terms
+  'use', 'using', 'guide', 'tool', 'tools', 'code', 'app',
+  'update', 'release', 'version', 'dev', 'build', 'test',
+  'data', 'api', 'web', 'get', 'set', 'run', 'make',
 ]);
 
 const JA_STOPWORDS = new Set([
@@ -145,9 +150,25 @@ function tokenizeLatin(text: string): [string, string][] {
   return ngrams;
 }
 
-/** Katakana stopwords (common but meaningless katakana words) */
+/** Katakana stopwords — common/generic words that don't indicate a trend */
 const KATAKANA_STOPWORDS = new Set([
+  // Particles / functional
   'オン', 'ザ', 'アン', 'フォー', 'ウィズ', 'イン',
+  // Generic tech/news terms
+  'ツール', 'ガイド', 'モデル', 'リリース', 'アップデート', 'バージョン',
+  'サービス', 'プロジェクト', 'システム', 'アプリ', 'コード', 'データ',
+  'テスト', 'レビュー', 'ニュース', 'オンライン', 'サイト', 'ページ',
+  'メソッド', 'ライブラリ', 'フレームワーク', 'プラットフォーム',
+  'スキル', 'リーダーシップ', 'ビジネス', 'マネジメント',
+]);
+
+/** Kanji stopwords — common/generic words that don't indicate a trend */
+const KANJI_STOPWORDS = new Set([
+  '開発', '機能', '解説', '紹介', '活用', '実装', '設計', '構築',
+  '入門', '基本', '方法', '手法', '技術', '完全', '最新', '徹底',
+  '実践', '比較', '対応', '環境', '管理', '利用', '導入', '公開',
+  '記事', '情報', '世界', '日本', '企業', '市場', '問題', '政府',
+  '東洋経済',
 ]);
 
 /** Returns [key, originalForm] pairs for katakana */
@@ -161,6 +182,7 @@ function tokenizeKatakana(text: string): [string, string][] {
 /** Returns [key, originalForm] pairs for kanji */
 function tokenizeKanji(text: string): [string, string][] {
   if ([...text].length < 2) return [];
+  if (KANJI_STOPWORDS.has(text)) return [];
   return [[text, text]];
 }
 
