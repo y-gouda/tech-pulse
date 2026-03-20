@@ -9,6 +9,7 @@ export function useSearch() {
   const [pagination, setPagination] = useState<PaginationType | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchCategory, setSearchCategory] = useState<Category | 'all'>('all');
+  const [searchCategories, setSearchCategories] = useState<Category[] | undefined>(undefined);
   const [searchPage, setSearchPage] = useState(1);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -27,6 +28,7 @@ export function useSearch() {
       setResults(null);
       setPagination(null);
       setIsSearching(false);
+      setSearchCategories(undefined);
       return;
     }
 
@@ -35,7 +37,8 @@ export function useSearch() {
 
     searchArticles({
       q: debouncedQuery,
-      category: searchCategory,
+      category: searchCategories ? undefined : searchCategory,
+      categories: searchCategories,
       page: searchPage,
     })
       .then((res) => {
@@ -57,7 +60,7 @@ export function useSearch() {
     return () => {
       cancelled = true;
     };
-  }, [debouncedQuery, searchCategory, searchPage]);
+  }, [debouncedQuery, searchCategory, searchCategories, searchPage]);
 
   const setSearchPageCb = useCallback((page: number) => {
     setSearchPage(page);
@@ -71,6 +74,8 @@ export function useSearch() {
     isSearching,
     searchCategory,
     setSearchCategory,
+    searchCategories,
+    setSearchCategories,
     searchPage,
     setSearchPage: setSearchPageCb,
   } as const;

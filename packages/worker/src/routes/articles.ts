@@ -41,12 +41,14 @@ articles.get('/api/articles/search', async (c) => {
   }
 
   const category = c.req.query('category') as Category | undefined;
+  const categoriesParam = c.req.query('categories');
+  const categories = categoriesParam ? categoriesParam.split(',') as Category[] : undefined;
   const rawPage = parseInt(c.req.query('page') ?? '1', 10);
   const rawLimit = parseInt(c.req.query('limit') ?? '20', 10);
   const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
   const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 100) : 20;
 
-  const result = await searchArticles(c.env.DB, { q, category, page, limit });
+  const result = await searchArticles(c.env.DB, { q, category, categories, page, limit });
 
   return c.json({ ok: true, data: result });
 });

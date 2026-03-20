@@ -26,6 +26,7 @@ export default function App() {
     query, setQuery,
     results: searchResults, pagination: searchPagination,
     isSearching, searchPage, setSearchPage,
+    setSearchCategories,
   } = useSearch();
 
   const [activeSection, setActiveSection] = useState<Section>('tech');
@@ -275,7 +276,10 @@ export default function App() {
           {!isSearchActive && (
             <TrendingBar
               section={activeSection}
-              onKeywordClick={(keyword) => setQuery(keyword)}
+              onKeywordClick={(keyword) => {
+                setSearchCategories(sectionCategories);
+                setQuery(keyword);
+              }}
               fontSize={fontSize}
             />
           )}

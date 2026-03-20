@@ -81,7 +81,7 @@ function searchVariants(q: string): string[] {
 
 export async function searchArticles(
   db: D1Database,
-  opts: { q: string; category?: Category; page?: number; limit?: number }
+  opts: { q: string; category?: Category; categories?: Category[]; page?: number; limit?: number }
 ): Promise<ArticlesResult> {
   const page = opts.page ?? 1;
   const limit = opts.limit ?? 20;
@@ -105,7 +105,13 @@ export async function searchArticles(
   const params: unknown[] = [...likeParams];
   const countParams: unknown[] = [...likeParams];
 
-  if (opts.category) {
+  if (opts.categories && opts.categories.length > 0) {
+    const placeholders = opts.categories.map(() => '?').join(',');
+    query += ` AND a.category IN (${placeholders})`;
+    countQuery += ` AND a.category IN (${placeholders})`;
+    params.push(...opts.categories);
+    countParams.push(...opts.categories);
+  } else if (opts.category) {
     query += ' AND a.category = ?';
     countQuery += ' AND a.category = ?';
     params.push(opts.category);

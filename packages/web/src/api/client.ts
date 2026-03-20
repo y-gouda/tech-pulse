@@ -40,13 +40,15 @@ export function fetchArticles(params: {
 export function searchArticles(params: {
   q: string;
   category?: Category | 'all';
+  categories?: Category[];
   page?: number;
   limit?: number;
 }): Promise<ApiResponse<ArticlesData>> {
-  const { q, category, page, limit } = params;
+  const { q, category, categories, page, limit } = params;
   return request<ArticlesData>(`${BASE_URL}/articles/search`, {
     q,
     category: category === 'all' ? undefined : category,
+    categories: categories?.join(','),
     page,
     limit,
   });
