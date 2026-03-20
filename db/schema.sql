@@ -73,6 +73,7 @@ INSERT OR IGNORE INTO feeds (name, url, category) VALUES
   ('日経サイエンス', 'https://www.nikkei-science.com/?feed=rss2', 'science'),
   ('MIT Tech Review 日本版', 'https://www.technologyreview.jp/feed', 'science'),
   -- スポーツ
-  ('Number Web', 'https://number.bunshun.jp/list/rss', 'sports'),
-  ('スポニチ', 'https://www.sponichi.co.jp/rss/all.xml', 'sports'),
-  ('日刊スポーツ', 'https://www.nikkansports.com/rss/sports/atom.xml', 'sports');
+  ('Yahoo!スポーツ', 'https://news.yahoo.co.jp/rss/topics/sports.xml', 'sports'),
+  ('NHKスポーツ', 'https://www3.nhk.or.jp/rss/news/cat7.xml', 'sports'),
+  ('Full-Count', 'https://full-count.jp/feed/', 'sports'),
+  ('THE ANSWER', 'https://the-ans.jp/feed/', 'sports');

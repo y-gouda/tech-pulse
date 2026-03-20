@@ -41,7 +41,8 @@ export const FEED_SOURCES: FeedSource[] = [
   { name: 'MIT Tech Review 日本版', url: 'https://www.technologyreview.jp/feed', category: 'science' },
 
   // スポーツ
-  { name: 'Number Web', url: 'https://number.bunshun.jp/list/rss', category: 'sports' },
-  { name: 'スポニチ', url: 'https://www.sponichi.co.jp/rss/all.xml', category: 'sports' },
-  { name: '日刊スポーツ', url: 'https://www.nikkansports.com/rss/sports/atom.xml', category: 'sports' },
+  { name: 'Yahoo!スポーツ', url: 'https://news.yahoo.co.jp/rss/topics/sports.xml', category: 'sports' },
+  { name: 'NHKスポーツ', url: 'https://www3.nhk.or.jp/rss/news/cat7.xml', category: 'sports' },
+  { name: 'Full-Count', url: 'https://full-count.jp/feed/', category: 'sports' },
+  { name: 'THE ANSWER', url: 'https://the-ans.jp/feed/', category: 'sports' },
 ];
