@@ -1,13 +1,15 @@
 import type { Article } from '@tech-pulse/shared/types';
+import type { FontSize } from '../hooks/useFontSize';
 import ArticleCard from './ArticleCard';
 
 interface ArticleListProps {
   articles: Article[];
   isBookmarked: (id: number) => boolean;
   onToggleBookmark: (article: Article) => void;
+  fontSize: FontSize;
 }
 
-export default function ArticleList({ articles, isBookmarked, onToggleBookmark }: ArticleListProps) {
+export default function ArticleList({ articles, isBookmarked, onToggleBookmark, fontSize }: ArticleListProps) {
   if (articles.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-gray-400 dark:text-gray-600">
@@ -28,6 +30,7 @@ export default function ArticleList({ articles, isBookmarked, onToggleBookmark }
           article={article}
           isBookmarked={isBookmarked(article.id)}
           onToggleBookmark={onToggleBookmark}
+          fontSize={fontSize}
         />
       ))}
     </div>

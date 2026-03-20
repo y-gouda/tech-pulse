@@ -1,6 +1,7 @@
 import type { Category } from '@tech-pulse/shared/types';
 import type { ReactNode } from 'react';
 import type { Section } from './IconBar';
+import type { FontSize } from '../hooks/useFontSize';
 
 export type TabKey = Category | 'all' | 'today' | 'bookmarks';
 
@@ -8,6 +9,7 @@ interface SidebarProps {
   activeTab: TabKey;
   onTabChange: (tab: TabKey) => void;
   activeSection: Section;
+  fontSize: FontSize;
   onSectionChange: (section: Section) => void;
   bookmarkCount: number;
   isOpen: boolean;
@@ -77,13 +79,20 @@ const newsCategories: { key: Category; label: string }[] = [
   { key: 'science', label: '科学' },
 ];
 
-function NavItem({ tabKey, label, isActive, onClick, badge }: {
-  tabKey: string; label: string; isActive: boolean; onClick: () => void; badge?: number;
+const navFontPx: Record<FontSize, number> = {
+  normal: 13,
+  large: 15,
+  xlarge: 16,
+};
+
+function NavItem({ tabKey, label, isActive, onClick, badge, fontSize = 'normal' }: {
+  tabKey: string; label: string; isActive: boolean; onClick: () => void; badge?: number; fontSize?: FontSize;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`mb-0.5 flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-[13px] transition-colors ${
+      style={{ fontSize: `${navFontPx[fontSize]}px` }}
+      className={`mb-0.5 flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] transition-colors ${
         isActive
           ? 'bg-accent/10 font-medium text-accent dark:bg-accent/15 dark:text-green-400'
           : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#2a2a2a]'
@@ -102,7 +111,7 @@ function NavItem({ tabKey, label, isActive, onClick, badge }: {
   );
 }
 
-export default function Sidebar({ activeTab, onTabChange, activeSection, onSectionChange, bookmarkCount, isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ activeTab, onTabChange, activeSection, onSectionChange, bookmarkCount, isOpen, onClose, fontSize }: SidebarProps) {
   const handleClick = (key: TabKey) => {
     onTabChange(key);
     onClose();
@@ -147,16 +156,17 @@ export default function Sidebar({ activeTab, onTabChange, activeSection, onSecti
         </div>
 
         <nav className="flex-1 overflow-y-auto px-2 pt-3">
-          <NavItem tabKey="today" label="今日" isActive={activeTab === 'today'} onClick={() => handleClick('today')} />
-          <NavItem tabKey="bookmarks" label="ブックマーク" isActive={activeTab === 'bookmarks'} onClick={() => handleClick('bookmarks')} badge={bookmarkCount} />
+          <NavItem tabKey="today" label="今日" isActive={activeTab === 'today'} onClick={() => handleClick('today')} fontSize={fontSize} />
+          <NavItem tabKey="bookmarks" label="ブックマーク" isActive={activeTab === 'bookmarks'} onClick={() => handleClick('bookmarks')} badge={bookmarkCount} fontSize={fontSize} />
 
           <p className="mt-5 mb-1.5 px-2.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
             {sectionLabel}
           </p>
-          <NavItem tabKey="all" label="すべて" isActive={activeTab === 'all'} onClick={() => handleClick('all')} />
+          <NavItem tabKey="all" label="すべて" isActive={activeTab === 'all'} onClick={() => handleClick('all')} fontSize={fontSize} />
           {categories.map((cat) => (
             <NavItem
               key={cat.key}
+              fontSize={fontSize}
               tabKey={cat.key}
               label={cat.label}
               isActive={activeTab === cat.key}

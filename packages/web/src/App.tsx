@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Article, Pagination as PaginationType, Category } from '@tech-pulse/shared/types';
 import { fetchArticles } from './api/client';
 import { useTheme } from './hooks/useTheme';
+import { useFontSize } from './hooks/useFontSize';
 import { useBookmarks } from './hooks/useBookmarks';
 import { useSearch } from './hooks/useSearch';
 import Header from './components/Header';
@@ -18,6 +19,7 @@ const NEWS_CATEGORIES: Category[] = ['economy', 'politics', 'science'];
 
 export default function App() {
   const { theme, toggleTheme } = useTheme();
+  const { fontSize, cycleFontSize, label: fontSizeLabel } = useFontSize();
   const { bookmarks, isBookmarked, toggleBookmark } = useBookmarks();
   const {
     query, setQuery,
@@ -174,7 +176,7 @@ export default function App() {
           </div>
           <div>
             {isSearching ? <LoadingSpinner /> : (
-              <ArticleList articles={searchResults ?? []} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} />
+              <ArticleList articles={searchResults ?? []} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} fontSize={fontSize} />
             )}
           </div>
         </>
@@ -189,7 +191,7 @@ export default function App() {
             <p className="mt-1 text-[14px] text-gray-400 dark:text-gray-500">{sectionSubtitle}</p>
           </div>
           {todayLoading ? <LoadingSpinner /> : (
-            <TodayView articles={todayArticles} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} />
+            <TodayView articles={todayArticles} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} fontSize={fontSize} />
           )}
         </>
       );
@@ -202,7 +204,7 @@ export default function App() {
             <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">ブックマーク</h2>
             <p className="mt-1 text-[14px] text-gray-400 dark:text-gray-500">保存した記事</p>
           </div>
-          <ArticleList articles={bookmarks} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} />
+          <ArticleList articles={bookmarks} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} fontSize={fontSize} />
         </>
       );
     }
@@ -219,7 +221,7 @@ export default function App() {
         </div>
         {loading ? <LoadingSpinner /> : (
           <>
-            <ArticleList articles={articles} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} />
+            <ArticleList articles={articles} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} fontSize={fontSize} />
             {loadingMore && (
               <div className="flex justify-center py-4">
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-200 border-t-accent dark:border-[#333] dark:border-t-green-400" />
@@ -244,6 +246,9 @@ export default function App() {
         onToggleSidebar={() => setSidebarOpen((v) => !v)}
         query={query}
         onQueryChange={setQuery}
+        fontSize={fontSize}
+        fontSizeLabel={fontSizeLabel}
+        onCycleFontSize={cycleFontSize}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -257,6 +262,7 @@ export default function App() {
           bookmarkCount={bookmarks.length}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
+          fontSize={fontSize}
         />
 
         <main ref={mainRef} className="flex-1 overflow-y-auto bg-white dark:bg-[#1a1a1a]">

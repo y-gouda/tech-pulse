@@ -1,10 +1,12 @@
 import type { Article, Category } from '@tech-pulse/shared/types';
+import type { FontSize } from '../hooks/useFontSize';
 import ArticleCard from './ArticleCard';
 
 interface TodayViewProps {
   articles: Article[];
   isBookmarked: (id: number) => boolean;
   onToggleBookmark: (article: Article) => void;
+  fontSize: FontSize;
 }
 
 const sectionConfig: { key: Category; label: string }[] = [
@@ -16,8 +18,7 @@ const sectionConfig: { key: Category; label: string }[] = [
   { key: 'science', label: '科学' },
 ];
 
-export default function TodayView({ articles, isBookmarked, onToggleBookmark }: TodayViewProps) {
-  // Group articles by category
+export default function TodayView({ articles, isBookmarked, onToggleBookmark, fontSize }: TodayViewProps) {
   const grouped = new Map<Category, Article[]>();
   for (const article of articles) {
     const list = grouped.get(article.category) ?? [];
@@ -44,6 +45,7 @@ export default function TodayView({ articles, isBookmarked, onToggleBookmark }: 
                 article={article}
                 isBookmarked={isBookmarked(article.id)}
                 onToggleBookmark={onToggleBookmark}
+                fontSize={fontSize}
               />
             ))}
           </section>

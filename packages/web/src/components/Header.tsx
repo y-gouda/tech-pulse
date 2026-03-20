@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react';
 
+import type { FontSize } from '../hooks/useFontSize';
+
 interface HeaderProps {
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
   onToggleSidebar: () => void;
   query: string;
   onQueryChange: (query: string) => void;
+  fontSize: FontSize;
+  fontSizeLabel: string;
+  onCycleFontSize: () => void;
 }
 
 function useIsDesktop() {
@@ -18,7 +23,7 @@ function useIsDesktop() {
   return isDesktop;
 }
 
-export default function Header({ theme, onToggleTheme, onToggleSidebar, query, onQueryChange }: HeaderProps) {
+export default function Header({ theme, onToggleTheme, onToggleSidebar, query, onQueryChange, fontSize, fontSizeLabel, onCycleFontSize }: HeaderProps) {
   const isDesktop = useIsDesktop();
 
   return (
@@ -72,8 +77,23 @@ export default function Header({ theme, onToggleTheme, onToggleSidebar, query, o
         </div>
       </div>
 
-      {/* Theme toggle */}
-      <div className="flex items-center px-4">
+      {/* Font size + Theme toggle */}
+      <div className="flex items-center gap-1 px-4">
+        <button
+          onClick={onCycleFontSize}
+          className="relative rounded p-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#333]"
+          aria-label={`文字サイズ: ${fontSizeLabel}`}
+          title={`文字サイズ: ${fontSizeLabel}`}
+        >
+          <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 7V4h16v3" /><path d="M9 20h6" /><path d="M12 4v16" />
+          </svg>
+          {fontSize !== 'normal' && (
+            <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[8px] font-bold text-white">
+              {fontSize === 'large' ? '大' : '特'}
+            </span>
+          )}
+        </button>
         <button
           onClick={onToggleTheme}
           className="rounded p-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#333]"

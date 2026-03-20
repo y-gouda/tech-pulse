@@ -1,9 +1,11 @@
 import type { Article, Category } from '@tech-pulse/shared/types';
+import type { FontSize } from '../hooks/useFontSize';
 
 interface ArticleCardProps {
   article: Article;
   isBookmarked: boolean;
   onToggleBookmark: (article: Article) => void;
+  fontSize: FontSize;
 }
 
 const categoryBadge: Record<Category, { label: string; className: string }> = {
@@ -14,6 +16,13 @@ const categoryBadge: Record<Category, { label: string; className: string }> = {
   politics: { label: '社会', className: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400' },
   science: { label: '科学', className: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-400' },
 };
+
+const fontPx = {
+  title:   { normal: 16, large: 18, xlarge: 21 },
+  meta:    { normal: 12, large: 13, xlarge: 15 },
+  badge:   { normal: 10, large: 11, xlarge: 13 },
+  summary: { normal: 14, large: 16, xlarge: 18 },
+} as const;
 
 function formatRelativeTime(dateString: string): string {
   const now = Date.now();
@@ -40,7 +49,7 @@ function getDomain(url: string): string {
   }
 }
 
-export default function ArticleCard({ article, isBookmarked, onToggleBookmark }: ArticleCardProps) {
+export default function ArticleCard({ article, isBookmarked, onToggleBookmark, fontSize }: ArticleCardProps) {
   const domain = getDomain(article.url);
 
   return (
@@ -50,14 +59,15 @@ export default function ArticleCard({ article, isBookmarked, onToggleBookmark }:
         href={article.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="mb-1 block text-[15px] font-semibold leading-snug text-gray-900 group-hover:text-accent dark:text-gray-100 dark:group-hover:text-green-400"
+        style={{ fontSize: `${fontPx.title[fontSize]}px` }}
+        className="mb-1 block font-semibold leading-snug text-gray-900 group-hover:text-accent dark:text-gray-100 dark:group-hover:text-green-400"
       >
         {article.title}
       </a>
 
       {/* Meta + summary line */}
-      <div className="flex items-center gap-1.5 text-[12px]">
-        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold leading-none ${categoryBadge[article.category].className}`}>
+      <div style={{ fontSize: `${fontPx.meta[fontSize]}px` }} className="flex items-center gap-1.5">
+        <span style={{ fontSize: `${fontPx.badge[fontSize]}px` }} className={`rounded px-1.5 py-0.5 font-semibold leading-none ${categoryBadge[article.category].className}`}>
           {categoryBadge[article.category].label}
         </span>
         <span className="text-gray-500 dark:text-gray-400">{domain}</span>
@@ -94,7 +104,7 @@ export default function ArticleCard({ article, isBookmarked, onToggleBookmark }:
 
       {/* Summary */}
       {article.summary && (
-        <p className="mt-1 line-clamp-1 text-[13px] text-gray-400 dark:text-gray-500">
+        <p style={{ fontSize: `${fontPx.summary[fontSize]}px` }} className="mt-1 line-clamp-1 text-gray-400 dark:text-gray-500">
           {article.summary}
         </p>
       )}
