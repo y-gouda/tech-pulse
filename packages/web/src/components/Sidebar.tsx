@@ -67,8 +67,8 @@ const icons: Record<string, ReactNode> = {
   ),
   sports: (
     <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 7 7 7 7" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 17 7 17 7" />
-      <path d="M4 22h16" /><path d="M10 22V2h4v20" /><path d="M7 9h10l-1 9H8z" />
+      <path d="M8 21h8" /><path d="M12 17v4" /><path d="M7 4h10l-1 8a4 4 0 0 1-8 0L7 4z" />
+      <path d="M7 4H5a2 2 0 0 0-2 2c0 2 2 3 4 3" /><path d="M17 4h2a2 2 0 0 1 2 2c0 2-2 3-4 3" />
     </svg>
   ),
 };
