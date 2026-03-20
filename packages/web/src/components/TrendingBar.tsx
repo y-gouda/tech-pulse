@@ -66,7 +66,6 @@ export default function TrendingBar({ section, onKeywordClick, fontSize }: Trend
             className={`${badgeTextSize} shrink-0 cursor-pointer rounded-full bg-blue-50 px-2.5 py-1 font-medium text-blue-600 transition-colors hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40`}
           >
             {kw.keyword}
-            <span className="ml-1 text-blue-400 dark:text-blue-500">{kw.count}</span>
           </button>
         ))}
       </div>
