@@ -13,6 +13,7 @@ import type { TabKey } from './components/Sidebar';
 import ArticleList from './components/ArticleList';
 import TodayView from './components/TodayView';
 import LoadingSpinner from './components/LoadingSpinner';
+import TrendingBar from './components/TrendingBar';
 
 const TECH_CATEGORIES: Category[] = ['programming', 'ai-ml', 'infra-cloud'];
 const NEWS_CATEGORIES: Category[] = ['economy', 'politics', 'science'];
@@ -270,6 +271,13 @@ export default function App() {
             <div className="mx-5 mt-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-600 dark:border-red-900 dark:bg-red-900/20 dark:text-red-400">
               {error}
             </div>
+          )}
+          {!isSearchActive && (
+            <TrendingBar
+              section={activeSection}
+              onKeywordClick={(keyword) => setQuery(keyword)}
+              fontSize={fontSize}
+            />
           )}
           {renderContent()}
         </main>
