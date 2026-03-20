@@ -1,4 +1,4 @@
-import type { ApiResponse, ArticlesData, FeedsData, Category } from '@tech-pulse/shared/types';
+import type { ApiResponse, ArticlesData, FeedsData, Category, TrendingData } from '@tech-pulse/shared/types';
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -56,4 +56,8 @@ export function fetchFeeds(category?: Category | 'all'): Promise<ApiResponse<Fee
   return request<FeedsData>(`${BASE_URL}/feeds`, {
     category: category === 'all' ? undefined : category,
   });
+}
+
+export function fetchTrending(section: 'tech' | 'news'): Promise<ApiResponse<TrendingData>> {
+  return request<TrendingData>(`${BASE_URL}/trending`, { section });
 }
