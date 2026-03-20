@@ -3,6 +3,8 @@ import { getFeeds, insertArticle, updateFeedLastFetched, deleteOldArticles } fro
 import { parseRssFeed } from '../lib/rss-parser';
 import { invalidateCache } from '../lib/cache';
 import type { Feed } from '@tech-pulse/shared/types';
+import { extractKeywords } from '../lib/keywords';
+import type { Category } from '@tech-pulse/shared/types';
 
 const MAX_FEED_SIZE = 5 * 1024 * 1024; // 5MB
 const FETCH_TIMEOUT_MS = 10_000; // 10s
@@ -73,6 +75,34 @@ export async function handleFetchFeeds(env: Env): Promise<void> {
 
   // Invalidate all article caches after inserting new data
   await invalidateCache(env.CACHE, '/api/articles');
+
+  // Extract trending keywords (failure here must not affect feed fetching)
+  try {
+    const TECH_CATS: Category[] = ['programming', 'ai-ml', 'infra-cloud'];
+    const NEWS_CATS: Category[] = ['economy', 'politics', 'science'];
+
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    for (const [section, cats] of [['tech', TECH_CATS], ['news', NEWS_CATS]] as const) {
+      const placeholders = cats.map(() => '?').join(',');
+      const stmt = env.DB.prepare(
+        `SELECT title FROM articles WHERE category IN (${placeholders}) AND published_at > ? ORDER BY published_at DESC`
+      );
+      const { results } = await stmt.bind(...cats, since).all<{ title: string }>();
+      const titles = (results ?? []).map((r) => r.title);
+      const keywords = extractKeywords(titles, 10);
+
+      await env.CACHE.put(
+        `trending:${section}`,
+        JSON.stringify({ keywords, updatedAt: new Date().toISOString() }),
+        { expirationTtl: 7200 }
+      );
+    }
+
+    console.log('Trending keywords updated');
+  } catch (err) {
+    console.error('Trending keyword extraction failed:', err);
+  }
 }
 
 export async function handleCleanup(env: Env): Promise<void> {
