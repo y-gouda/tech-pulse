@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import articles from './routes/articles';
 import feeds from './routes/feeds';
 import health from './routes/health';
+import trending from './routes/trending';
 import { handleFetchFeeds, handleCleanup } from './cron/fetch-feeds';
 
 export interface Env {
@@ -54,6 +55,7 @@ app.post('/api/cron/fetch', async (c) => {
 app.route('/', articles);
 app.route('/', feeds);
 app.route('/', health);
+app.route('/', trending);
 
 export default {
   fetch: app.fetch,
