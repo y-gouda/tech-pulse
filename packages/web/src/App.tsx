@@ -137,13 +137,17 @@ export default function App() {
     setActiveTab('today');
     setPage(1);
     setArticles([]);
-  }, []);
+    setQuery('');
+    setSearchCategories(undefined);
+  }, [setQuery, setSearchCategories]);
 
   const handleTabChange = useCallback((tab: TabKey) => {
     setActiveTab(tab);
     setPage(1);
     setArticles([]);
-  }, []);
+    setQuery('');
+    setSearchCategories(undefined);
+  }, [setQuery, setSearchCategories]);
 
   const isSearchActive = query.trim().length > 0;
 
