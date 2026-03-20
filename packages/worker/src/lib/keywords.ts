@@ -104,10 +104,10 @@ const EN_STOPWORDS = new Set([
   'why', 'new', 'your', 'you', 'can', 'will', 'has', 'have',
   'not', 'but', 'all', 'more', 'about', 'up', 'out', 'so',
   'no', 'just', 'than', 'into', 'over', 'after', 'also',
-  // Generic tech/content terms
-  'use', 'using', 'guide', 'tool', 'tools', 'code', 'app',
+  // Generic tech/content terms (only filtered as 1-grams; kept in multi-word N-grams)
+  'use', 'using', 'guide', 'tool', 'tools', 'app',
   'update', 'release', 'version', 'dev', 'build', 'test',
-  'data', 'api', 'web', 'get', 'set', 'run', 'make',
+  'data', 'web', 'get', 'set', 'run', 'make',
 ]);
 
 const JA_STOPWORDS = new Set([
