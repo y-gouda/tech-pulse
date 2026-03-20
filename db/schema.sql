@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS feeds (
   id              INTEGER PRIMARY KEY AUTOINCREMENT,
   name            TEXT NOT NULL,
   url             TEXT NOT NULL UNIQUE,
-  category        TEXT NOT NULL CHECK (category IN ('programming','ai-ml','infra-cloud','economy','politics','science')),
+  category        TEXT NOT NULL CHECK (category IN ('programming','ai-ml','infra-cloud','economy','politics','science','sports')),
   last_fetched_at TEXT,
   is_active       INTEGER NOT NULL DEFAULT 1,
   created_at      TEXT NOT NULL DEFAULT (datetime('now'))
@@ -71,4 +71,8 @@ INSERT OR IGNORE INTO feeds (name, url, category) VALUES
   ('Nature Japan', 'https://www.natureasia.com/ja-jp/rss/nature', 'science'),
   ('ナゾロジー', 'https://nazology.kusuguru.co.jp/feed', 'science'),
   ('日経サイエンス', 'https://www.nikkei-science.com/?feed=rss2', 'science'),
-  ('MIT Tech Review 日本版', 'https://www.technologyreview.jp/feed', 'science');
+  ('MIT Tech Review 日本版', 'https://www.technologyreview.jp/feed', 'science'),
+  -- スポーツ
+  ('Number Web', 'https://number.bunshun.jp/list/rss', 'sports'),
+  ('スポニチ', 'https://www.sponichi.co.jp/rss/all.xml', 'sports'),
+  ('日刊スポーツ', 'https://www.nikkansports.com/rss/sports/atom.xml', 'sports');

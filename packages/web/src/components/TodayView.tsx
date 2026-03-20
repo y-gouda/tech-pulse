@@ -16,6 +16,7 @@ const sectionConfig: { key: Category; label: string }[] = [
   { key: 'programming', label: 'プログラミング' },
   { key: 'infra-cloud', label: 'インフラ・クラウド' },
   { key: 'science', label: '科学' },
+  { key: 'sports', label: 'スポーツ' },
 ];
 
 export default function TodayView({ articles, isBookmarked, onToggleBookmark, fontSize }: TodayViewProps) {

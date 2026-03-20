@@ -65,6 +65,11 @@ const icons: Record<string, ReactNode> = {
       <path d="M9 3h6v8l4 7H5l4-7V3z" /><line x1="8" y1="3" x2="16" y2="3" />
     </svg>
   ),
+  sports: (
+    <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  ),
 };
 
 const techCategories: { key: Category; label: string }[] = [
@@ -77,6 +82,7 @@ const newsCategories: { key: Category; label: string }[] = [
   { key: 'economy', label: '経済・ビジネス' },
   { key: 'politics', label: '政治・社会' },
   { key: 'science', label: '科学' },
+  { key: 'sports', label: 'スポーツ' },
 ];
 
 const navFontPx: Record<FontSize, number> = {
@@ -177,7 +183,7 @@ export default function Sidebar({ activeTab, onTabChange, activeSection, onSecti
 
         <div className="border-t border-gray-200 px-4 py-3 dark:border-[#333]">
           <p className="text-[11px] text-gray-400 dark:text-gray-600">
-            20 ソース &middot; 30分毎に更新
+            23 ソース &middot; 30分毎に更新
           </p>
         </div>
       </aside>

@@ -79,7 +79,7 @@ export async function handleFetchFeeds(env: Env): Promise<void> {
 
 export async function handleTrending(env: Env): Promise<void> {
   const TECH_CATS: Category[] = ['programming', 'ai-ml', 'infra-cloud'];
-  const NEWS_CATS: Category[] = ['economy', 'politics', 'science'];
+  const NEWS_CATS: Category[] = ['economy', 'politics', 'science', 'sports'];
 
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 

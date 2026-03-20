@@ -16,7 +16,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import TrendingBar from './components/TrendingBar';
 
 const TECH_CATEGORIES: Category[] = ['programming', 'ai-ml', 'infra-cloud'];
-const NEWS_CATEGORIES: Category[] = ['economy', 'politics', 'science'];
+const NEWS_CATEGORIES: Category[] = ['economy', 'politics', 'science', 'sports'];
 
 export default function App() {
   const { theme, toggleTheme } = useTheme();
@@ -159,6 +159,7 @@ export default function App() {
     economy: '経済・ビジネス',
     politics: '政治・社会',
     science: '科学',
+    sports: 'スポーツ',
     bookmarks: 'ブックマーク',
   };
 

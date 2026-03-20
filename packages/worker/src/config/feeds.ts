@@ -39,4 +39,9 @@ export const FEED_SOURCES: FeedSource[] = [
   { name: 'ナゾロジー', url: 'https://nazology.kusuguru.co.jp/feed', category: 'science' },
   { name: '日経サイエンス', url: 'https://www.nikkei-science.com/?feed=rss2', category: 'science' },
   { name: 'MIT Tech Review 日本版', url: 'https://www.technologyreview.jp/feed', category: 'science' },
+
+  // スポーツ
+  { name: 'Number Web', url: 'https://number.bunshun.jp/list/rss', category: 'sports' },
+  { name: 'スポニチ', url: 'https://www.sponichi.co.jp/rss/all.xml', category: 'sports' },
+  { name: '日刊スポーツ', url: 'https://www.nikkansports.com/rss/sports/atom.xml', category: 'sports' },
 ];

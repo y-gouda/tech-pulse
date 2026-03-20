@@ -1,4 +1,4 @@
-export type Category = 'programming' | 'ai-ml' | 'infra-cloud' | 'economy' | 'politics' | 'science';
+export type Category = 'programming' | 'ai-ml' | 'infra-cloud' | 'economy' | 'politics' | 'science' | 'sports';
 
 export interface Feed {
   id: number;
@@ -58,6 +58,7 @@ export const CATEGORIES: { key: Category | 'all'; label: string }[] = [
   { key: 'economy', label: '経済・ビジネス' },
   { key: 'politics', label: '政治・社会' },
   { key: 'science', label: '科学' },
+  { key: 'sports', label: 'スポーツ' },
 ];
 
 export interface TrendingKeyword {
