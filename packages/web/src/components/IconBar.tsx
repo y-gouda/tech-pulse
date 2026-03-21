@@ -18,7 +18,7 @@ function Tooltip({ label, children }: { label: string; children: React.ReactNode
     >
       {children}
       {show && (
-        <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 -translate-y-1/2 whitespace-nowrap rounded-md bg-accent px-2.5 py-1 text-xs font-medium text-white shadow-lg">
+        <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 -translate-y-1/2 whitespace-nowrap rounded-md bg-gray-800 px-2 py-1 text-xs text-gray-100 shadow-md dark:bg-gray-700">
           {label}
         </div>
       )}
@@ -41,7 +41,12 @@ export default function IconBar({ activeSection, onSectionChange }: IconBarProps
           aria-label="テクノロジー"
         >
           <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" />
+            <rect x="4" y="4" width="16" height="16" rx="2" />
+            <rect x="9" y="9" width="6" height="6" rx="1" />
+            <line x1="9" y1="2" x2="9" y2="4" /><line x1="15" y1="2" x2="15" y2="4" />
+            <line x1="9" y1="20" x2="9" y2="22" /><line x1="15" y1="20" x2="15" y2="22" />
+            <line x1="2" y1="9" x2="4" y2="9" /><line x1="2" y1="15" x2="4" y2="15" />
+            <line x1="20" y1="9" x2="22" y2="9" /><line x1="20" y1="15" x2="22" y2="15" />
           </svg>
         </button>
       </Tooltip>
