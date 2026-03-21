@@ -77,8 +77,18 @@ export default function Header({ theme, onToggleTheme, onToggleSidebar, query, o
         </div>
       </div>
 
-      {/* Font size + Theme toggle */}
+      {/* Refresh + Font size + Theme toggle */}
       <div className="flex items-center gap-1 px-4">
+        <button
+          onClick={() => window.location.reload()}
+          className="rounded p-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#333]"
+          aria-label="リロード"
+          title="リロード"
+        >
+          <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+          </svg>
+        </button>
         <button
           onClick={onCycleFontSize}
           className="relative rounded p-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#333]"
