@@ -59,24 +59,12 @@ export async function getArticles(
   };
 }
 
-// Convert katakana to hiragana for kana-insensitive search
-function kataToHira(str: string): string {
-  return str.replace(/[\u30A1-\u30F6]/g, (ch) =>
-    String.fromCharCode(ch.charCodeAt(0) - 0x60)
-  );
-}
-
-// Generate search variants: original + lowercase + hiragana-converted
-function searchVariants(q: string): string[] {
-  const lower = q.toLowerCase();
-  const hira = kataToHira(lower);
-  const variants = new Set([lower, hira]);
-  // Also add katakana version
-  const kata = hira.replace(/[\u3041-\u3096]/g, (ch) =>
-    String.fromCharCode(ch.charCodeAt(0) + 0x60)
-  );
-  variants.add(kata);
-  return [...variants];
+// Escape FTS5 special characters by wrapping query in double quotes
+function escapeFtsQuery(q: string): string {
+  // Remove characters that are special in FTS5 syntax
+  const cleaned = q.replace(/["*(){}[\]^~\\:]/g, '');
+  if (!cleaned.trim()) return '';
+  return `"${cleaned}"`;
 }
 
 export async function searchArticles(
@@ -87,23 +75,15 @@ export async function searchArticles(
   const limit = opts.limit ?? 20;
   const offset = (page - 1) * limit;
 
-  const variants = searchVariants(opts.q);
-
-  // Build LIKE conditions: (LOWER(title) LIKE ? OR LOWER(summary) LIKE ? OR LOWER(title) LIKE ? OR ...)
-  const likeConditions = variants
-    .map(() => '(LOWER(a.title) LIKE ? OR LOWER(a.summary) LIKE ?)')
-    .join(' OR ');
-
-  const likeParams: string[] = [];
-  for (const v of variants) {
-    const pattern = `%${v}%`;
-    likeParams.push(pattern, pattern);
+  const ftsQuery = escapeFtsQuery(opts.q);
+  if (!ftsQuery) {
+    return { articles: [], pagination: { page, limit, total: 0, hasMore: false } };
   }
 
-  let query = `SELECT a.* FROM articles a WHERE (${likeConditions})`;
-  let countQuery = `SELECT COUNT(*) as total FROM articles a WHERE (${likeConditions})`;
-  const params: unknown[] = [...likeParams];
-  const countParams: unknown[] = [...likeParams];
+  let query = `SELECT a.* FROM articles a JOIN articles_fts ON articles_fts.rowid = a.id WHERE articles_fts MATCH ?`;
+  let countQuery = `SELECT COUNT(*) as total FROM articles a JOIN articles_fts ON articles_fts.rowid = a.id WHERE articles_fts MATCH ?`;
+  const params: unknown[] = [ftsQuery];
+  const countParams: unknown[] = [ftsQuery];
 
   if (opts.categories && opts.categories.length > 0) {
     const placeholders = opts.categories.map(() => '?').join(',');
@@ -172,14 +152,22 @@ export async function insertArticle(
 
 export async function getFeeds(
   db: D1Database,
-  category?: string
+  category?: string,
+  activeOnly?: boolean
 ): Promise<Feed[]> {
   let query = 'SELECT * FROM feeds';
+  const conditions: string[] = [];
   const params: unknown[] = [];
 
   if (category) {
-    query += ' WHERE category = ?';
+    conditions.push('category = ?');
     params.push(category);
+  }
+  if (activeOnly) {
+    conditions.push('is_active = 1');
+  }
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
   }
 
   query += ' ORDER BY name ASC';

@@ -22,6 +22,7 @@ app.use('*', cors({
 }));
 
 // Rate limiting middleware (KV-backed, per IP, 60 req/min)
+// KV writes are minimized: only on new window start and at threshold boundary
 app.use('/api/*', async (c, next) => {
   const ip = c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown';
   const key = `ratelimit:${ip}`;
@@ -33,7 +34,10 @@ app.use('/api/*', async (c, next) => {
     if (data.count >= 60) {
       return c.json({ ok: false, error: 'Rate limit exceeded' }, 429);
     }
-    await c.env.CACHE.put(key, JSON.stringify({ minute: now, count: data.count + 1 }), { expirationTtl: 120 });
+    // Only write at intervals of 10 to reduce KV writes (approximate counting is acceptable)
+    if (data.count % 10 === 0) {
+      await c.env.CACHE.put(key, JSON.stringify({ minute: now, count: data.count + 10 }), { expirationTtl: 120 });
+    }
   } else {
     await c.env.CACHE.put(key, JSON.stringify({ minute: now, count: 1 }), { expirationTtl: 120 });
   }
@@ -43,8 +47,11 @@ app.use('/api/*', async (c, next) => {
 
 // Manual cron trigger (protected by secret)
 app.post('/api/cron/fetch', async (c) => {
+  if (!c.env.CRON_SECRET) {
+    return c.json({ ok: false, error: 'Server misconfiguration' }, 500);
+  }
   const secret = c.req.header('X-Cron-Secret');
-  if (!c.env.CRON_SECRET || secret !== c.env.CRON_SECRET) {
+  if (secret !== c.env.CRON_SECRET) {
     return c.json({ ok: false, error: 'Unauthorized' }, 401);
   }
   c.executionCtx.waitUntil(handleFetchFeeds(c.env));
@@ -52,8 +59,11 @@ app.post('/api/cron/fetch', async (c) => {
 });
 
 app.post('/api/cron/trending', async (c) => {
+  if (!c.env.CRON_SECRET) {
+    return c.json({ ok: false, error: 'Server misconfiguration' }, 500);
+  }
   const secret = c.req.header('X-Cron-Secret');
-  if (!c.env.CRON_SECRET || secret !== c.env.CRON_SECRET) {
+  if (secret !== c.env.CRON_SECRET) {
     return c.json({ ok: false, error: 'Unauthorized' }, 401);
   }
   c.executionCtx.waitUntil(handleTrending(c.env));

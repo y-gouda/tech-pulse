@@ -22,15 +22,6 @@ export async function setCachedResponse<T>(
   await kv.put(key, JSON.stringify(data), { expirationTtl: ttlSeconds });
 }
 
-export async function invalidateCache(
-  kv: KVNamespace,
-  prefix: string
-): Promise<void> {
-  const listed = await kv.list({ prefix });
-  const deletePromises = listed.keys.map((key) => kv.delete(key.name));
-  await Promise.all(deletePromises);
-}
-
 export function buildCacheKey(
   path: string,
   params: Record<string, string>

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { Article, Category } from '@tech-pulse/shared/types';
 import type { FontSize } from '../hooks/useFontSize';
 
@@ -50,7 +51,7 @@ function getDomain(url: string): string {
   }
 }
 
-export default function ArticleCard({ article, isBookmarked, onToggleBookmark, fontSize }: ArticleCardProps) {
+export default memo(function ArticleCard({ article, isBookmarked, onToggleBookmark, fontSize }: ArticleCardProps) {
   const domain = getDomain(article.url);
 
   return (
@@ -111,4 +112,4 @@ export default function ArticleCard({ article, isBookmarked, onToggleBookmark, f
       )}
     </article>
   );
-}
+})

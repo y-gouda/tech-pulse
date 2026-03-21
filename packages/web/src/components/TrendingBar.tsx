@@ -1,8 +1,15 @@
 // packages/web/src/components/TrendingBar.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { TrendingKeyword } from '@tech-pulse/shared/types';
 import type { FontSize } from '../hooks/useFontSize';
 import { fetchTrending } from '../api/client';
+
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+interface CacheEntry {
+  data: TrendingKeyword[];
+  fetchedAt: number;
+}
 
 interface TrendingBarProps {
   section: 'tech' | 'news';
@@ -13,14 +20,26 @@ interface TrendingBarProps {
 export default function TrendingBar({ section, onKeywordClick, fontSize }: TrendingBarProps) {
   const [keywords, setKeywords] = useState<TrendingKeyword[]>([]);
   const [loading, setLoading] = useState(true);
+  const cacheRef = useRef<Map<string, CacheEntry>>(new Map());
 
   useEffect(() => {
+    const cached = cacheRef.current.get(section);
+    if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
+      setKeywords(cached.data);
+      setLoading(false);
+      return;
+    }
+
     let cancelled = false;
     setLoading(true);
 
     fetchTrending(section)
       .then((res) => {
-        if (!cancelled) setKeywords(res.data?.keywords ?? []);
+        if (!cancelled) {
+          const data = res.data?.keywords ?? [];
+          setKeywords(data);
+          cacheRef.current.set(section, { data, fetchedAt: Date.now() });
+        }
       })
       .catch((err) => {
         console.error('Failed to fetch trending:', err);

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { Article } from '@tech-pulse/shared/types';
 
 const STORAGE_KEY = 'tech-pulse-bookmarks';
@@ -35,9 +35,11 @@ function saveBookmarks(bookmarks: Article[]) {
 export function useBookmarks() {
   const [bookmarks, setBookmarks] = useState<Article[]>(loadBookmarks);
 
+  const bookmarkIds = useMemo(() => new Set(bookmarks.map((b) => b.id)), [bookmarks]);
+
   const isBookmarked = useCallback(
-    (id: number) => bookmarks.some((b) => b.id === id),
-    [bookmarks],
+    (id: number) => bookmarkIds.has(id),
+    [bookmarkIds],
   );
 
   const toggleBookmark = useCallback((article: Article) => {
