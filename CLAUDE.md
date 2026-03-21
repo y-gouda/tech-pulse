@@ -61,7 +61,10 @@ npx tsc -p packages/web/tsconfig.json --noEmit
 
 # デプロイ
 npm run deploy:worker                                                          # Worker
-npm run build:web && npx wrangler pages deploy packages/web/dist --project-name=rss-reader --commit-dirty=true  # Pages
+npm run build:web && npx wrangler pages deploy packages/web/dist --project-name=rss-reader --commit-dirty=true --commit-message="deploy"  # Pages
+# 注意: Pagesデプロイ時、直前のgitコミットメッセージに日本語が含まれると
+# "Invalid commit message, it must be a valid UTF-8 string" エラーになる場合がある。
+# --commit-message でASCIIのみのメッセージを明示的に指定すること。
 ```
 
 ## アーキテクチャ上の注意
