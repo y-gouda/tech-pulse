@@ -79,6 +79,9 @@ export default {
       case '5 0 * * *':
         ctx.waitUntil(handleCleanup(env));
         break;
+      case '52 23 * * 0-4':
+        ctx.waitUntil(handleFetchFeeds(env));
+        break;
       default:
         console.log(`Unknown cron: ${event.cron}`);
     }

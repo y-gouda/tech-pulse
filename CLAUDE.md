@@ -50,6 +50,7 @@ npx wrangler dev --local --test-scheduled
 curl "http://localhost:8787/__scheduled?cron=*/30+*+*+*+*"       # RSS取得
 curl "http://localhost:8787/__scheduled?cron=15,45+*+*+*+*"    # トレンドキーワード抽出
 curl "http://localhost:8787/__scheduled?cron=5+0+*+*+*"        # 古記事削除
+curl "http://localhost:8787/__scheduled?cron=52+23+*+*+0-4"     # 平日8:52 追加RSS取得
 
 # ビルド
 npm run build:web         # フロントエンドビルド
@@ -88,7 +89,7 @@ npm run build:web && npx wrangler pages deploy packages/web/dist --project-name=
 - Worker: 10万リクエスト/日、CPU 10ms/リクエスト
 - D1: 5GB ストレージ
 - KV: 10万reads/日、1,000writes/日
-- Cron: 最大5つ（現在3つ使用: RSS取得, トレンド抽出, 古記事削除）
+- Cron: 最大5つ（現在4つ使用: RSS取得, トレンド抽出, 古記事削除, 平日8:52追加取得）
 - 現在24ソース、30分毎取得で十分余裕あり
 
 ## カテゴリ・ソース変更手順
