@@ -29,34 +29,10 @@ function useIsStandalone() {
     || ('standalone' in window.navigator && (window.navigator as unknown as { standalone: boolean }).standalone);
 }
 
-function useInstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<Event | null>(null);
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
-
-  const install = async () => {
-    if (!deferredPrompt) return;
-    (deferredPrompt as unknown as { prompt: () => void }).prompt();
-    const { outcome } = await (deferredPrompt as unknown as { userChoice: Promise<{ outcome: string }> }).userChoice;
-    if (outcome === 'accepted') {
-      setDeferredPrompt(null);
-    }
-  };
-
-  return { canInstall: deferredPrompt !== null, install };
-}
 
 export default function Header({ theme, onToggleTheme, onToggleSidebar, query, onQueryChange, fontSize, fontSizeLabel, onCycleFontSize }: HeaderProps) {
   const isDesktop = useIsDesktop();
   const isStandalone = useIsStandalone();
-  const { canInstall, install } = useInstallPrompt();
 
   return (
     <header className="sticky top-0 z-50 flex h-12 items-center border-b border-gray-200 bg-white dark:border-[#333] dark:bg-[#1a1a1a]">
@@ -109,20 +85,8 @@ export default function Header({ theme, onToggleTheme, onToggleSidebar, query, o
         </div>
       </div>
 
-      {/* Install + Refresh + Font size + Theme toggle */}
+      {/* Refresh + Font size + Theme toggle */}
       <div className="flex items-center gap-1 px-4">
-        {canInstall && (
-          <button
-            onClick={install}
-            className="mr-1 flex items-center gap-1 rounded-md bg-accent px-2.5 py-1 text-[12px] font-medium text-white transition-colors hover:bg-accent-hover"
-            aria-label="アプリをインストール"
-          >
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            インストール
-          </button>
-        )}
         {isStandalone && (
           <button
             onClick={() => window.location.reload()}
