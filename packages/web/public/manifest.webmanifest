@@ -3,7 +3,6 @@
   "short_name": "RSS Reader",
   "start_url": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay"],
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
