@@ -29,8 +29,13 @@ export default function App() {
     setSearchCategories,
   } = useSearch();
 
-  const [activeSection, setActiveSection] = useState<Section>('tech');
-  const [activeTab, setActiveTab] = useState<TabKey>('today');
+  const [activeSection, setActiveSection] = useState<Section>(() => {
+    const saved = localStorage.getItem('tech-pulse-section');
+    return saved === 'tech' || saved === 'news' ? saved : 'tech';
+  });
+  const [activeTab, setActiveTab] = useState<TabKey>(() => {
+    return (localStorage.getItem('tech-pulse-tab') as TabKey) || 'today';
+  });
   const [articles, setArticles] = useState<Article[]>([]);
   const [pagination, setPagination] = useState<PaginationType | null>(null);
   const [page, setPage] = useState(1);
@@ -135,6 +140,8 @@ export default function App() {
   const handleSectionChange = useCallback((section: Section) => {
     setActiveSection(section);
     setActiveTab('today');
+    localStorage.setItem('tech-pulse-section', section);
+    localStorage.setItem('tech-pulse-tab', 'today');
     setPage(1);
     setArticles([]);
     setQuery('');
@@ -143,6 +150,7 @@ export default function App() {
 
   const handleTabChange = useCallback((tab: TabKey) => {
     setActiveTab(tab);
+    localStorage.setItem('tech-pulse-tab', tab);
     setPage(1);
     setArticles([]);
     setQuery('');
