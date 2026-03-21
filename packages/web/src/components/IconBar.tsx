@@ -16,8 +16,8 @@ export default function IconBar({ activeSection, onSectionChange }: IconBarProps
             ? 'bg-accent text-white'
             : 'text-gray-400 hover:bg-gray-200 dark:text-gray-500 dark:hover:bg-[#2a2a2a]'
         }`}
-        aria-label="テック"
-        title="テック"
+        aria-label="テクノロジー"
+        title="テクノロジー"
       >
         <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" />
@@ -32,8 +32,8 @@ export default function IconBar({ activeSection, onSectionChange }: IconBarProps
             ? 'bg-accent text-white'
             : 'text-gray-400 hover:bg-gray-200 dark:text-gray-500 dark:hover:bg-[#2a2a2a]'
         }`}
-        aria-label="ニュース"
-        title="ニュース"
+        aria-label="一般ニュース"
+        title="一般ニュース"
       >
         <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
