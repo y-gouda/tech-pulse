@@ -23,19 +23,71 @@ function useIsDesktop() {
   return isDesktop;
 }
 
-function useIsStandalone() {
-  return window.matchMedia('(display-mode: standalone)').matches
-    || ('standalone' in window.navigator && (window.navigator as unknown as { standalone: boolean }).standalone);
+function useDisplayMode() {
+  const [mode, setMode] = useState(() => {
+    if (window.matchMedia('(display-mode: window-controls-overlay)').matches) return 'wco' as const;
+    if (window.matchMedia('(display-mode: standalone)').matches) return 'standalone' as const;
+    if ('standalone' in window.navigator && (window.navigator as unknown as { standalone: boolean }).standalone) return 'standalone' as const;
+    return 'browser' as const;
+  });
+
+  useEffect(() => {
+    const wcoMq = window.matchMedia('(display-mode: window-controls-overlay)');
+    const standaloneMq = window.matchMedia('(display-mode: standalone)');
+    const handler = () => {
+      if (wcoMq.matches) setMode('wco');
+      else if (standaloneMq.matches) setMode('standalone');
+      else setMode('browser');
+    };
+    wcoMq.addEventListener('change', handler);
+    standaloneMq.addEventListener('change', handler);
+    return () => {
+      wcoMq.removeEventListener('change', handler);
+      standaloneMq.removeEventListener('change', handler);
+    };
+  }, []);
+
+  return mode;
 }
 
+const reloadButton = (
+  <button
+    onClick={() => window.location.reload()}
+    className="rounded p-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#333]"
+    aria-label="リロード"
+    title="リロード"
+    style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+  >
+    <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+    </svg>
+  </button>
+);
 
 export default function Header({ theme, onToggleTheme, onToggleSidebar, query, onQueryChange, fontSize, fontSizeLabel, onCycleFontSize }: HeaderProps) {
   const isDesktop = useIsDesktop();
-  const isStandalone = useIsStandalone();
+  const displayMode = useDisplayMode();
+  const isWco = displayMode === 'wco';
+  const isStandalone = displayMode === 'standalone';
 
   return (
     <>
-      <header className="sticky top-0 z-50 flex h-12 items-center border-b border-gray-200 bg-white dark:border-[#333] dark:bg-[#1a1a1a]">
+      {/* Titlebar area for window-controls-overlay mode */}
+      {isWco && (
+        <div
+          className="fixed top-0 left-[env(titlebar-area-x,0px)] z-[100] flex h-[env(titlebar-area-height,33px)] w-[env(titlebar-area-width,100%)] items-center bg-white dark:bg-[#1a1a1a]"
+          style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+        >
+          {reloadButton}
+          <span className="ml-1 text-[13px] font-semibold text-gray-800 dark:text-gray-100" style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}>
+            RSS Reader
+          </span>
+        </div>
+      )}
+
+      <header
+        className={`sticky top-0 z-50 flex h-12 items-center border-b border-gray-200 bg-white dark:border-[#333] dark:bg-[#1a1a1a] ${isWco ? 'mt-[env(titlebar-area-height,33px)]' : ''}`}
+      >
         {/* Left area */}
         <div className="flex h-full shrink-0 items-center gap-2 border-r border-gray-200 px-3 lg:w-[272px] lg:gap-3 lg:px-4 dark:border-[#333]">
           {!isDesktop && (
@@ -50,7 +102,7 @@ export default function Header({ theme, onToggleTheme, onToggleSidebar, query, o
             </button>
           )}
 
-          {isDesktop && (
+          {isDesktop && !isWco && (
             <span className="text-[14px] font-semibold text-gray-800 dark:text-gray-100">RSS Reader</span>
           )}
         </div>
@@ -85,20 +137,9 @@ export default function Header({ theme, onToggleTheme, onToggleSidebar, query, o
           </div>
         </div>
 
-        {/* Refresh (non-overlay standalone) + Font size + Theme toggle */}
+        {/* Refresh (standalone fallback) + Font size + Theme toggle */}
         <div className="flex items-center gap-1 px-4">
-          {isStandalone && (
-            <button
-              onClick={() => window.location.reload()}
-              className="rounded p-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#333]"
-              aria-label="リロード"
-              title="リロード"
-            >
-              <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-              </svg>
-            </button>
-          )}
+          {isStandalone && reloadButton}
           <button
             onClick={onCycleFontSize}
             className="relative rounded p-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#333]"
