@@ -28,46 +28,13 @@ function useIsStandalone() {
     || ('standalone' in window.navigator && (window.navigator as unknown as { standalone: boolean }).standalone);
 }
 
-function useWindowControlsOverlay() {
-  const [visible, setVisible] = useState(() =>
-    'windowControlsOverlay' in navigator &&
-    (navigator as unknown as { windowControlsOverlay: { visible: boolean } }).windowControlsOverlay.visible
-  );
-
-  useEffect(() => {
-    if (!('windowControlsOverlay' in navigator)) return;
-    const overlay = (navigator as unknown as { windowControlsOverlay: EventTarget & { visible: boolean } }).windowControlsOverlay;
-    const handler = () => setVisible(overlay.visible);
-    overlay.addEventListener('geometrychange', handler);
-    return () => overlay.removeEventListener('geometrychange', handler);
-  }, []);
-
-  return visible;
-}
 
 export default function Header({ theme, onToggleTheme, onToggleSidebar, query, onQueryChange, fontSize, fontSizeLabel, onCycleFontSize }: HeaderProps) {
   const isDesktop = useIsDesktop();
   const isStandalone = useIsStandalone();
-  const isOverlay = useWindowControlsOverlay();
 
   return (
     <>
-      {/* Titlebar reload button (window-controls-overlay mode) */}
-      {isOverlay && (
-        <div className="fixed top-0 left-0 z-[100] flex h-[env(titlebar-area-height,33px)] items-center bg-white pl-[env(titlebar-area-x,0px)] dark:bg-[#1a1a1a]" style={{ appRegion: 'no-drag' } as React.CSSProperties}>
-          <button
-            onClick={() => window.location.reload()}
-            className="ml-1 rounded p-1 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#333]"
-            aria-label="リロード"
-            title="リロード"
-          >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-            </svg>
-          </button>
-        </div>
-      )}
-
       <header className="sticky top-0 z-50 flex h-12 items-center border-b border-gray-200 bg-white dark:border-[#333] dark:bg-[#1a1a1a]">
         {/* Left area */}
         <div className="flex h-full shrink-0 items-center gap-2 border-r border-gray-200 px-3 lg:w-[272px] lg:gap-3 lg:px-4 dark:border-[#333]">
@@ -120,7 +87,7 @@ export default function Header({ theme, onToggleTheme, onToggleSidebar, query, o
 
         {/* Refresh (non-overlay standalone) + Font size + Theme toggle */}
         <div className="flex items-center gap-1 px-4">
-          {isStandalone && !isOverlay && (
+          {isStandalone && (
             <button
               onClick={() => window.location.reload()}
               className="rounded p-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#333]"
