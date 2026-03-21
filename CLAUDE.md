@@ -59,7 +59,8 @@ npx tsc -p packages/worker/tsconfig.json --noEmit
 npx tsc -p packages/web/tsconfig.json --noEmit
 
 # デプロイ
-npm run deploy:worker
+npm run deploy:worker                                                          # Worker
+npm run build:web && npx wrangler pages deploy packages/web/dist --project-name=rss-reader --commit-dirty=true  # Pages
 ```
 
 ## アーキテクチャ上の注意
