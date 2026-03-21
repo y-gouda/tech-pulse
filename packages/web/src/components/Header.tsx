@@ -23,8 +23,15 @@ function useIsDesktop() {
   return isDesktop;
 }
 
+function useIsStandalone() {
+  // PWA standalone mode (added to home screen)
+  return window.matchMedia('(display-mode: standalone)').matches
+    || ('standalone' in window.navigator && (window.navigator as unknown as { standalone: boolean }).standalone);
+}
+
 export default function Header({ theme, onToggleTheme, onToggleSidebar, query, onQueryChange, fontSize, fontSizeLabel, onCycleFontSize }: HeaderProps) {
   const isDesktop = useIsDesktop();
+  const isStandalone = useIsStandalone();
 
   return (
     <header className="sticky top-0 z-50 flex h-12 items-center border-b border-gray-200 bg-white dark:border-[#333] dark:bg-[#1a1a1a]">
@@ -79,16 +86,18 @@ export default function Header({ theme, onToggleTheme, onToggleSidebar, query, o
 
       {/* Refresh + Font size + Theme toggle */}
       <div className="flex items-center gap-1 px-4">
-        <button
-          onClick={() => window.location.reload()}
-          className="rounded p-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#333]"
-          aria-label="リロード"
-          title="リロード"
-        >
-          <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-          </svg>
-        </button>
+        {isStandalone && (
+          <button
+            onClick={() => window.location.reload()}
+            className="rounded p-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#333]"
+            aria-label="リロード"
+            title="リロード"
+          >
+            <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+            </svg>
+          </button>
+        )}
         <button
           onClick={onCycleFontSize}
           className="relative rounded p-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#333]"
