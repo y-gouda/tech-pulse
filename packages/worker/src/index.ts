@@ -79,7 +79,7 @@ export default {
       case '5 0 * * *':
         ctx.waitUntil(handleCleanup(env));
         break;
-      case '52 23 * * 0-4':
+      case '52 23 * * 0,1,2,3,4':
         ctx.waitUntil(handleFetchFeeds(env));
         break;
       default:

@@ -50,7 +50,7 @@ npx wrangler dev --local --test-scheduled
 curl "http://localhost:8787/__scheduled?cron=*/30+*+*+*+*"       # RSS取得
 curl "http://localhost:8787/__scheduled?cron=15,45+*+*+*+*"    # トレンドキーワード抽出
 curl "http://localhost:8787/__scheduled?cron=5+0+*+*+*"        # 古記事削除
-curl "http://localhost:8787/__scheduled?cron=52+23+*+*+0-4"     # 平日8:52 追加RSS取得
+curl "http://localhost:8787/__scheduled?cron=52+23+*+*+0,1,2,3,4"     # 平日8:52 追加RSS取得
 
 # ビルド
 npm run build:web         # フロントエンドビルド
