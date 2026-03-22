@@ -25,7 +25,7 @@ tech-pulse/
 │   │       ├── routes/       # articles, feeds, health, trending
 │   │       ├── cron/         # fetch-feeds.ts (RSS取得 + トレンド抽出 + 古記事削除)
 │   │       ├── lib/          # rss-parser, db, cache, keywords
-│   │       └── config/       # feeds.ts (24ソース定義)
+│   │       └── config/       # feeds.ts (27ソース定義)
 │   └── web/                  # React SPA (Cloudflare Pages)
 │       └── src/
 │           ├── App.tsx        # ルートコンポーネント
@@ -71,7 +71,7 @@ npm run build:web && npx wrangler pages deploy packages/web/dist --project-name=
 
 - **セクション分離**: テック (programming, ai-ml, infra-cloud) とニュース (economy, politics, science, sports) は左IconBarで切り替え。「今日」「すべて」はセクションにスコープされる
 - **トレンドキーワード**: N-gramベースで記事タイトルからキーワード抽出。カタカナは単語単位、漢字は複合語単位、英語は1-3語N-gram。KVに保存し `GET /api/trending?section=tech|news` で提供。専用Cron（15,45分）で抽出
-- **フィード取得バッチ処理**: 24ソースを5件ずつバッチで並列取得（Cloudflare Workers のCPU時間制限対策）
+- **フィード取得バッチ処理**: 27ソースを5件ずつバッチで並列取得（Cloudflare Workers のCPU時間制限対策）
 - **Tailwind CSS v4 ダークモード**: `@custom-variant dark (&:where(.dark, .dark *));` が `index.css` に必要。`dark:` クラスが `<html>` の `.dark` クラスで制御される
 - **DB CHECK制約**: feeds テーブルに `category IN (...)` 制約あり。カテゴリ追加時は `db/schema.sql` の CHECK制約 + シードデータ + `shared/types.ts` の Category型 + フロント各コンポーネントの更新が必要
 - **DB再作成**: ローカルでCHECK制約やカテゴリを変更した場合、`rm -rf .wrangler/state/v3/d1` してスキーマ再適用が必要（ALTER TABLE不可）
@@ -93,7 +93,7 @@ npm run build:web && npx wrangler pages deploy packages/web/dist --project-name=
 - D1: 5GB ストレージ
 - KV: 10万reads/日、1,000writes/日
 - Cron: 最大5つ（現在4つ使用: RSS取得, トレンド抽出, 古記事削除, 平日8:52追加取得）
-- 現在24ソース、30分毎取得で十分余裕あり
+- 現在27ソース、30分毎取得で十分余裕あり
 
 ## カテゴリ・ソース変更手順
 

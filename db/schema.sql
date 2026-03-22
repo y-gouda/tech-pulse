@@ -63,10 +63,14 @@ INSERT OR IGNORE INTO feeds (name, url, category) VALUES
   ('日本経済新聞', 'https://assets.wor.jp/rss/rdf/nikkei/news.rdf', 'economy'),
   ('日経ビジネス', 'https://business.nikkei.com/rss/sns/nb.rdf', 'economy'),
   ('東洋経済オンライン', 'https://toyokeizai.net/list/feed/rss', 'economy'),
+  ('Reuters', 'https://assets.wor.jp/rss/rdf/reuters/top.rdf', 'economy'),
+  ('Yahoo!ビジネス', 'https://news.yahoo.co.jp/rss/topics/business.xml', 'economy'),
   -- 政治・社会
   ('共同通信', 'https://www.kyodo.co.jp/feed/', 'politics'),
   ('時事通信', 'https://www.jiji.com/rss/ranking.rdf', 'politics'),
   ('BBC News Japan', 'https://feeds.bbci.co.uk/japanese/rss.xml', 'politics'),
+  ('毎日新聞', 'https://mainichi.jp/rss/etc/mainichi-flash.rss', 'politics'),
+  ('Yahoo!国際', 'https://news.yahoo.co.jp/rss/topics/world.xml', 'politics'),
   -- 科学
   ('Nature Japan', 'https://www.natureasia.com/ja-jp/rss/nature', 'science'),
   ('ナゾロジー', 'https://nazology.kusuguru.co.jp/feed', 'science'),
@@ -74,6 +78,5 @@ INSERT OR IGNORE INTO feeds (name, url, category) VALUES
   ('MIT Tech Review 日本版', 'https://www.technologyreview.jp/feed', 'science'),
   -- スポーツ
   ('Yahoo!スポーツ', 'https://news.yahoo.co.jp/rss/topics/sports.xml', 'sports'),
-  ('NHKスポーツ', 'https://www3.nhk.or.jp/rss/news/cat7.xml', 'sports'),
   ('Full-Count', 'https://full-count.jp/feed/', 'sports'),
   ('THE ANSWER', 'https://the-ans.jp/feed/', 'sports');

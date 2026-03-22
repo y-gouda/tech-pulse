@@ -28,11 +28,15 @@ export const FEED_SOURCES: FeedSource[] = [
   { name: '日本経済新聞', url: 'https://assets.wor.jp/rss/rdf/nikkei/news.rdf', category: 'economy' },
   { name: '日経ビジネス', url: 'https://business.nikkei.com/rss/sns/nb.rdf', category: 'economy' },
   { name: '東洋経済オンライン', url: 'https://toyokeizai.net/list/feed/rss', category: 'economy' },
+  { name: 'Reuters', url: 'https://assets.wor.jp/rss/rdf/reuters/top.rdf', category: 'economy' },
+  { name: 'Yahoo!ビジネス', url: 'https://news.yahoo.co.jp/rss/topics/business.xml', category: 'economy' },
 
   // 政治・社会
   { name: '共同通信', url: 'https://www.kyodo.co.jp/feed/', category: 'politics' },
   { name: '時事通信', url: 'https://www.jiji.com/rss/ranking.rdf', category: 'politics' },
   { name: 'BBC News Japan', url: 'https://feeds.bbci.co.uk/japanese/rss.xml', category: 'politics' },
+  { name: '毎日新聞', url: 'https://mainichi.jp/rss/etc/mainichi-flash.rss', category: 'politics' },
+  { name: 'Yahoo!国際', url: 'https://news.yahoo.co.jp/rss/topics/world.xml', category: 'politics' },
 
   // 科学
   { name: 'Nature Japan', url: 'https://www.natureasia.com/ja-jp/rss/nature', category: 'science' },
@@ -42,7 +46,6 @@ export const FEED_SOURCES: FeedSource[] = [
 
   // スポーツ
   { name: 'Yahoo!スポーツ', url: 'https://news.yahoo.co.jp/rss/topics/sports.xml', category: 'sports' },
-  { name: 'NHKスポーツ', url: 'https://www3.nhk.or.jp/rss/news/cat7.xml', category: 'sports' },
   { name: 'Full-Count', url: 'https://full-count.jp/feed/', category: 'sports' },
   { name: 'THE ANSWER', url: 'https://the-ans.jp/feed/', category: 'sports' },
 ];
