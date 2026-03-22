@@ -27,13 +27,15 @@ export function fetchArticles(params: {
   categories?: Category[];
   page?: number;
   limit?: number;
+  since?: string;
 }): Promise<ApiResponse<ArticlesData>> {
-  const { category, categories, page, limit } = params;
+  const { category, categories, page, limit, since } = params;
   return request<ArticlesData>(`${BASE_URL}/articles`, {
     category: category === 'all' ? undefined : category,
     categories: categories?.join(','),
     page,
     limit,
+    since,
   });
 }
 

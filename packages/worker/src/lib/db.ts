@@ -5,6 +5,7 @@ interface GetArticlesOptions {
   categories?: Category[];
   page?: number;
   limit?: number;
+  since?: string;
 }
 
 interface ArticlesResult {
@@ -24,22 +25,41 @@ export async function getArticles(
   let countQuery = 'SELECT COUNT(*) as total FROM articles';
   const params: unknown[] = [];
   const countParams: unknown[] = [];
+  const conditions: string[] = [];
 
   if (opts.categories && opts.categories.length > 0) {
     const placeholders = opts.categories.map(() => '?').join(',');
-    query += ` WHERE category IN (${placeholders})`;
-    countQuery += ` WHERE category IN (${placeholders})`;
+    conditions.push(`category IN (${placeholders})`);
     params.push(...opts.categories);
     countParams.push(...opts.categories);
   } else if (opts.category) {
-    query += ' WHERE category = ?';
-    countQuery += ' WHERE category = ?';
+    conditions.push('category = ?');
     params.push(opts.category);
     countParams.push(opts.category);
   }
 
+  if (opts.since) {
+    conditions.push('published_at >= ?');
+    params.push(opts.since);
+    countParams.push(opts.since);
+  }
+
+  if (conditions.length > 0) {
+    const where = ` WHERE ${conditions.join(' AND ')}`;
+    query += where;
+    countQuery += where;
+  }
+
   query += ' ORDER BY published_at DESC LIMIT ? OFFSET ?';
   params.push(limit, offset);
+
+  if (opts.since) {
+    const articlesResult = await db.prepare(query).bind(...params).all<Article>();
+    return {
+      articles: articlesResult.results,
+      pagination: { page, limit, total: articlesResult.results.length, hasMore: false },
+    };
+  }
 
   const [articlesResult, countResult] = await Promise.all([
     db.prepare(query).bind(...params).all<Article>(),

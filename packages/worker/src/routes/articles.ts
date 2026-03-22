@@ -11,16 +11,27 @@ articles.get('/api/articles', async (c) => {
     const category = c.req.query('category') as Category | undefined;
     const categoriesParam = c.req.query('categories');
     const categories = categoriesParam ? categoriesParam.split(',') as Category[] : undefined;
+    const sinceRaw = c.req.query('since');
+    let since: string | undefined;
+    if (sinceRaw) {
+      const parsed = Date.parse(sinceRaw);
+      if (!Number.isFinite(parsed)) {
+        return c.json({ ok: false, error: 'Invalid "since" parameter' }, 400);
+      }
+      since = new Date(parsed).toISOString();
+    }
     const rawPage = parseInt(c.req.query('page') ?? '1', 10);
     const rawLimit = parseInt(c.req.query('limit') ?? '20', 10);
     const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
-    const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 100) : 20;
+    const maxLimit = since ? 500 : 100;
+    const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, maxLimit) : 20;
 
     const cacheKey = buildCacheKey('/api/articles', {
       category: category ?? '',
       categories: categoriesParam ?? '',
       page: String(page),
       limit: String(limit),
+      since: since ?? '',
     });
 
     const cached = await getCachedResponse<ArticlesData>(c.env.CACHE, cacheKey);
@@ -28,7 +39,7 @@ articles.get('/api/articles', async (c) => {
       return c.json({ ok: true, data: cached });
     }
 
-    const result = await getArticles(c.env.DB, { category, categories, page, limit });
+    const result = await getArticles(c.env.DB, { category, categories, page, limit, since });
 
     await setCachedResponse(c.env.CACHE, cacheKey, result);
 

@@ -60,7 +60,8 @@ export default function App() {
     setTodayLoading(true);
     setError(null);
 
-    fetchArticles({ categories: sectionCategories, page: 1, limit: 60 })
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    fetchArticles({ categories: sectionCategories, since, limit: 500 })
       .then((res) => {
         if (!cancelled) setTodayArticles(res.data.articles);
       })
