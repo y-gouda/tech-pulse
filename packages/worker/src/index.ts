@@ -14,9 +14,14 @@ export interface Env {
 
 const app = new Hono<{ Bindings: Env }>();
 
-// CORS middleware - restrict to GET only
+// CORS middleware
 app.use('*', cors({
-  origin: '*',
+  origin: (origin) => {
+    if (!origin) return origin;
+    if (origin === 'http://localhost:5173') return origin;
+    if (origin.endsWith('.rss-reader-5z2.pages.dev') || origin === 'https://rss-reader-5z2.pages.dev') return origin;
+    return undefined;
+  },
   allowMethods: ['GET', 'POST'],
   allowHeaders: ['Content-Type'],
 }));

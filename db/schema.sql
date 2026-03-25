@@ -1,3 +1,5 @@
+PRAGMA foreign_keys = ON;
+
 -- feeds: RSSフィードソース管理
 CREATE TABLE IF NOT EXISTS feeds (
   id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -12,7 +14,7 @@ CREATE TABLE IF NOT EXISTS feeds (
 -- articles: 記事データ
 CREATE TABLE IF NOT EXISTS articles (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  feed_id       INTEGER NOT NULL REFERENCES feeds(id),
+  feed_id       INTEGER NOT NULL REFERENCES feeds(id) ON DELETE CASCADE,
   title         TEXT NOT NULL,
   url           TEXT NOT NULL UNIQUE,
   summary       TEXT DEFAULT '',

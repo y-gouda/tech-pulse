@@ -1,7 +1,7 @@
 import type { Env } from '../index';
-import { getFeeds, insertArticle, updateFeedLastFetched, deleteOldArticles } from '../lib/db';
+import { getFeeds, updateFeedLastFetched, deleteOldArticles } from '../lib/db';
 import { parseRssFeed } from '../lib/rss-parser';
-import type { Feed } from '@tech-pulse/shared/types';
+import { invalidateCacheByPrefix } from '../lib/cache';
 import { extractKeywords } from '../lib/keywords';
 import type { Category } from '@tech-pulse/shared/types';
 
@@ -67,8 +67,9 @@ export async function handleFetchFeeds(env: Env): Promise<void> {
             article.thumbnailUrl
           )
         );
-        if (stmts.length > 0) {
-          await env.DB.batch(stmts);
+        // D1 free tier limit: max 100 statements per batch
+        for (let j = 0; j < stmts.length; j += 100) {
+          await env.DB.batch(stmts.slice(j, j + 100));
         }
 
         await updateFeedLastFetched(env.DB, feed.id);
@@ -89,6 +90,10 @@ export async function handleFetchFeeds(env: Env): Promise<void> {
   }
 
   console.log(`Feed fetch complete: ${successCount} success, ${failCount} failed`);
+
+  if (successCount > 0) {
+    await invalidateCacheByPrefix(env.CACHE, '/api/articles');
+  }
 }
 
 export async function handleTrending(env: Env): Promise<void> {

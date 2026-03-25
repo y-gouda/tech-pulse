@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Article, Category, Pagination as PaginationType } from '@tech-pulse/shared/types';
 import { searchArticles } from '../api/client';
 
@@ -11,7 +11,6 @@ export function useSearch() {
   const [searchCategory, setSearchCategory] = useState<Category | 'all'>('all');
   const [searchCategories, setSearchCategories] = useState<Category[] | undefined>(undefined);
   const [searchPage, setSearchPage] = useState(1);
-  const abortRef = useRef<AbortController | null>(null);
 
   // Debounce query
   useEffect(() => {

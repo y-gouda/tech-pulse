@@ -139,37 +139,6 @@ export async function searchArticles(
   };
 }
 
-export async function insertArticle(
-  db: D1Database,
-  article: {
-    feed_id: number;
-    title: string;
-    url: string;
-    summary: string;
-    author: string;
-    published_at: string;
-    category: string;
-    thumbnail_url: string;
-  }
-): Promise<void> {
-  await db
-    .prepare(
-      `INSERT OR IGNORE INTO articles (feed_id, title, url, summary, author, published_at, category, thumbnail_url)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-    )
-    .bind(
-      article.feed_id,
-      article.title,
-      article.url,
-      article.summary,
-      article.author,
-      article.published_at,
-      article.category,
-      article.thumbnail_url
-    )
-    .run();
-}
-
 export async function getFeeds(
   db: D1Database,
   category?: string,

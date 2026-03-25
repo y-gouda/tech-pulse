@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { Article, Pagination as PaginationType, Category } from '@tech-pulse/shared/types';
 import { fetchArticles } from './api/client';
 import { useTheme } from './hooks/useTheme';
@@ -30,11 +30,18 @@ export default function App() {
   } = useSearch();
 
   const [activeSection, setActiveSection] = useState<Section>(() => {
-    const saved = localStorage.getItem('tech-pulse-section');
-    return saved === 'tech' || saved === 'news' ? saved : 'tech';
+    try {
+      const saved = localStorage.getItem('tech-pulse-section');
+      if (saved === 'tech' || saved === 'news') return saved;
+    } catch { /* ignore */ }
+    return 'tech';
   });
   const [activeTab, setActiveTab] = useState<TabKey>(() => {
-    return (localStorage.getItem('tech-pulse-tab') as TabKey) || 'today';
+    try {
+      const saved = localStorage.getItem('tech-pulse-tab');
+      if (saved) return saved as TabKey;
+    } catch { /* ignore */ }
+    return 'today';
   });
   const [articles, setArticles] = useState<Article[]>([]);
   const [pagination, setPagination] = useState<PaginationType | null>(null);
@@ -49,7 +56,10 @@ export default function App() {
 
   const mainRef = useRef<HTMLElement>(null);
 
-  const sectionCategories = activeSection === 'tech' ? TECH_CATEGORIES : NEWS_CATEGORIES;
+  const sectionCategories = useMemo(
+    () => activeSection === 'tech' ? TECH_CATEGORIES : NEWS_CATEGORIES,
+    [activeSection],
+  );
 
   // Fetch today's articles
   useEffect(() => {
@@ -73,7 +83,7 @@ export default function App() {
       });
 
     return () => { cancelled = true; };
-  }, [activeTab, activeSection, query]);
+  }, [activeTab, sectionCategories, query]);
 
   // Fetch articles (page 1 = fresh load, page > 1 = append)
   useEffect(() => {
@@ -115,7 +125,7 @@ export default function App() {
       });
 
     return () => { cancelled = true; };
-  }, [activeTab, activeSection, page, query]);
+  }, [activeTab, sectionCategories, page, query]);
 
   // Infinite scroll handler
   useEffect(() => {
@@ -192,7 +202,19 @@ export default function App() {
           </div>
           <div>
             {isSearching ? <LoadingSpinner /> : (
-              <ArticleList articles={searchResults ?? []} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} fontSize={fontSize} />
+              <>
+                <ArticleList articles={searchResults ?? []} isBookmarked={isBookmarked} onToggleBookmark={toggleBookmark} fontSize={fontSize} />
+                {searchPagination && searchPagination.hasMore && (
+                  <div className="flex justify-center py-4">
+                    <button
+                      onClick={() => setSearchPage(searchPage + 1)}
+                      className="rounded-md border border-gray-300 px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50 dark:border-[#444] dark:text-gray-400 dark:hover:bg-[#2a2a2a]"
+                    >
+                      もっと見る
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </>

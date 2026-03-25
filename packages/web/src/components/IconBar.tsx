@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 export type Section = 'tech' | 'news';
 
 interface IconBarProps {
@@ -8,20 +6,12 @@ interface IconBarProps {
 }
 
 function Tooltip({ label, children }: { label: string; children: React.ReactNode }) {
-  const [show, setShow] = useState(false);
-
   return (
-    <div
-      className="relative"
-      onMouseEnter={() => setShow(true)}
-      onMouseLeave={() => setShow(false)}
-    >
+    <div className="group relative">
       {children}
-      {show && (
-        <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 -translate-y-1/2 whitespace-nowrap rounded-md bg-gray-800 px-2 py-1 text-xs text-gray-100 shadow-md dark:bg-gray-700">
-          {label}
-        </div>
-      )}
+      <div className="pointer-events-none absolute left-full top-1/2 z-50 ml-2 -translate-y-1/2 whitespace-nowrap rounded-md bg-gray-800 px-2 py-1 text-xs text-gray-100 opacity-0 shadow-md transition-opacity group-hover:opacity-100 dark:bg-gray-700">
+        {label}
+      </div>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import ArticleCard from './ArticleCard';
 
 interface TodayViewProps {
   articles: Article[];
-  isBookmarked: (id: number) => boolean;
+  isBookmarked: (id: number, url?: string) => boolean;
   onToggleBookmark: (article: Article) => void;
   fontSize: FontSize;
 }
@@ -24,7 +24,7 @@ export default function TodayView({ articles, isBookmarked, onToggleBookmark, fo
         <ArticleCard
           key={article.id}
           article={article}
-          isBookmarked={isBookmarked(article.id)}
+          isBookmarked={isBookmarked(article.id, article.url)}
           onToggleBookmark={onToggleBookmark}
           fontSize={fontSize}
         />

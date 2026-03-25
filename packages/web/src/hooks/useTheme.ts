@@ -3,8 +3,10 @@ import { useState, useEffect, useCallback } from 'react';
 type Theme = 'light' | 'dark';
 
 function getInitialTheme(): Theme {
-  const stored = localStorage.getItem('theme') as Theme | null;
-  if (stored === 'light' || stored === 'dark') return stored;
+  try {
+    const stored = localStorage.getItem('theme') as Theme | null;
+    if (stored === 'light' || stored === 'dark') return stored;
+  } catch { /* ignore */ }
   return 'light';
 }
 

@@ -24,8 +24,15 @@ function useIsDesktop() {
 }
 
 function useIsStandalone() {
-  return window.matchMedia('(display-mode: standalone)').matches
-    || ('standalone' in window.navigator && (window.navigator as unknown as { standalone: boolean }).standalone);
+  const mql = window.matchMedia('(display-mode: standalone)');
+  const iosStandalone = 'standalone' in window.navigator && (window.navigator as unknown as { standalone: boolean }).standalone;
+  const [isStandalone, setIsStandalone] = useState(mql.matches || iosStandalone);
+  useEffect(() => {
+    const handler = (e: MediaQueryListEvent) => setIsStandalone(e.matches || iosStandalone);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
+  return isStandalone;
 }
 
 export default function Header({ theme, onToggleTheme, onToggleSidebar, query, onQueryChange, fontSize, fontSizeLabel, onCycleFontSize }: HeaderProps) {

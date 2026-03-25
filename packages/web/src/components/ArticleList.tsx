@@ -4,7 +4,7 @@ import ArticleCard from './ArticleCard';
 
 interface ArticleListProps {
   articles: Article[];
-  isBookmarked: (id: number) => boolean;
+  isBookmarked: (id: number, url?: string) => boolean;
   onToggleBookmark: (article: Article) => void;
   fontSize: FontSize;
 }
@@ -28,7 +28,7 @@ export default function ArticleList({ articles, isBookmarked, onToggleBookmark, 
         <ArticleCard
           key={article.id}
           article={article}
-          isBookmarked={isBookmarked(article.id)}
+          isBookmarked={isBookmarked(article.id, article.url)}
           onToggleBookmark={onToggleBookmark}
           fontSize={fontSize}
         />

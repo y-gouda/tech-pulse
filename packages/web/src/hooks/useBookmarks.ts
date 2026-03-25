@@ -35,17 +35,17 @@ function saveBookmarks(bookmarks: Article[]) {
 export function useBookmarks() {
   const [bookmarks, setBookmarks] = useState<Article[]>(loadBookmarks);
 
-  const bookmarkIds = useMemo(() => new Set(bookmarks.map((b) => b.id)), [bookmarks]);
+  const bookmarkUrls = useMemo(() => new Set(bookmarks.map((b) => b.url)), [bookmarks]);
 
   const isBookmarked = useCallback(
-    (id: number) => bookmarkIds.has(id),
-    [bookmarkIds],
+    (id: number, url?: string) => url ? bookmarkUrls.has(url) : bookmarks.some((b) => b.id === id),
+    [bookmarkUrls, bookmarks],
   );
 
   const toggleBookmark = useCallback((article: Article) => {
     setBookmarks((prev) => {
-      const exists = prev.some((b) => b.id === article.id);
-      const next = exists ? prev.filter((b) => b.id !== article.id) : [...prev, article];
+      const exists = prev.some((b) => b.url === article.url);
+      const next = exists ? prev.filter((b) => b.url !== article.url) : [...prev, article];
       saveBookmarks(next);
       return next;
     });

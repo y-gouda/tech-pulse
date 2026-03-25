@@ -13,8 +13,10 @@ const FONT_SIZE_LABELS: Record<FontSize, string> = {
 const FONT_SIZE_ORDER: FontSize[] = ['normal', 'large', 'xlarge'];
 
 function getInitialFontSize(): FontSize {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === 'normal' || stored === 'large' || stored === 'xlarge') return stored;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === 'normal' || stored === 'large' || stored === 'xlarge') return stored;
+  } catch { /* ignore */ }
   return 'normal';
 }
 
