@@ -26,8 +26,12 @@ export async function invalidateCacheByPrefix(
   kv: KVNamespace,
   prefix: string
 ): Promise<void> {
-  const listed = await kv.list({ prefix });
-  await Promise.all(listed.keys.map((k) => kv.delete(k.name)));
+  let cursor: string | undefined;
+  do {
+    const listed = await kv.list({ prefix, cursor });
+    await Promise.all(listed.keys.map((k) => kv.delete(k.name)));
+    cursor = listed.list_complete ? undefined : listed.cursor;
+  } while (cursor);
 }
 
 export function buildCacheKey(

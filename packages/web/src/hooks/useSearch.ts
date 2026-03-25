@@ -41,7 +41,9 @@ export function useSearch() {
     })
       .then((res) => {
         if (!cancelled) {
-          setResults(res.data.articles);
+          setResults((prev) =>
+            searchPage === 1 ? res.data.articles : [...(prev ?? []), ...res.data.articles]
+          );
           setPagination(res.data.pagination);
         }
       })
