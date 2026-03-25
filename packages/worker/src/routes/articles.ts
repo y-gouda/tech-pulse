@@ -1,16 +1,38 @@
 import { Hono } from 'hono';
+import type { Context } from 'hono';
 import type { Env } from '../index';
 import { getArticles, searchArticles } from '../lib/db';
 import { getCachedResponse, setCachedResponse, buildCacheKey } from '../lib/cache';
+import { isValidCategory } from '@tech-pulse/shared/types';
 import type { Category, ArticlesData } from '@tech-pulse/shared/types';
 
 const articles = new Hono<{ Bindings: Env }>();
 
+function parseCategory(c: Context): { category?: Category; error?: Response } {
+  const raw = c.req.query('category');
+  if (raw && !isValidCategory(raw)) {
+    return { error: c.json({ ok: false, error: 'Invalid "category" parameter' }, 400) as unknown as Response };
+  }
+  return { category: raw as Category | undefined };
+}
+
+function parseCategories(c: Context): { categories?: Category[]; categoriesParam?: string; error?: Response } {
+  const categoriesParam = c.req.query('categories');
+  if (!categoriesParam) return {};
+  const vals = categoriesParam.split(',');
+  if (!vals.every(isValidCategory)) {
+    return { error: c.json({ ok: false, error: 'Invalid "categories" parameter' }, 400) as unknown as Response };
+  }
+  return { categories: vals as Category[], categoriesParam };
+}
+
 articles.get('/api/articles', async (c) => {
   try {
-    const category = c.req.query('category') as Category | undefined;
-    const categoriesParam = c.req.query('categories');
-    const categories = categoriesParam ? categoriesParam.split(',') as Category[] : undefined;
+    const { category, error: catErr } = parseCategory(c);
+    if (catErr) return catErr;
+    const { categories, categoriesParam, error: catsErr } = parseCategories(c);
+    if (catsErr) return catsErr;
+
     const sinceRaw = c.req.query('since');
     let since: string | undefined;
     if (sinceRaw) {
@@ -57,9 +79,11 @@ articles.get('/api/articles/search', async (c) => {
       return c.json({ ok: false, error: 'Query parameter "q" is required' }, 400);
     }
 
-    const category = c.req.query('category') as Category | undefined;
-    const categoriesParam = c.req.query('categories');
-    const categories = categoriesParam ? categoriesParam.split(',') as Category[] : undefined;
+    const { category, error: catErr } = parseCategory(c);
+    if (catErr) return catErr;
+    const { categories, error: catsErr } = parseCategories(c);
+    if (catsErr) return catsErr;
+
     const rawPage = parseInt(c.req.query('page') ?? '1', 10);
     const rawLimit = parseInt(c.req.query('limit') ?? '20', 10);
     const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;

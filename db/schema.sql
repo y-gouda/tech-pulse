@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS articles (
   summary       TEXT DEFAULT '',
   author        TEXT DEFAULT '',
   published_at  TEXT NOT NULL,
-  category      TEXT NOT NULL,
+  category      TEXT NOT NULL CHECK (category IN ('programming','ai-ml','infra-cloud','economy','politics','science','sports')),
   thumbnail_url TEXT DEFAULT '',
   created_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );

@@ -1,5 +1,11 @@
 export type Category = 'programming' | 'ai-ml' | 'infra-cloud' | 'economy' | 'politics' | 'science' | 'sports';
 
+export const VALID_CATEGORIES: readonly Category[] = ['programming', 'ai-ml', 'infra-cloud', 'economy', 'politics', 'science', 'sports'] as const;
+
+export function isValidCategory(value: string): value is Category {
+  return (VALID_CATEGORIES as readonly string[]).includes(value);
+}
+
 export interface Feed {
   id: number;
   name: string;

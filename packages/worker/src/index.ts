@@ -22,7 +22,7 @@ app.use('*', cors({
 }));
 
 // Rate limiting middleware (KV-backed, per IP, 60 req/min)
-// KV writes are minimized: only on new window start and at threshold boundary
+// Probabilistic write: ~1/10 chance per request to minimize KV writes (1,000/day free tier)
 app.use('/api/*', async (c, next) => {
   const ip = c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown';
   const key = `ratelimit:${ip}`;
@@ -34,8 +34,8 @@ app.use('/api/*', async (c, next) => {
     if (data.count >= 60) {
       return c.json({ ok: false, error: 'Rate limit exceeded' }, 429);
     }
-    // Only write at intervals of 10 to reduce KV writes (approximate counting is acceptable)
-    if (data.count % 10 === 0) {
+    // Write with ~1/10 probability, incrementing by 10 to approximate real count
+    if (Math.random() < 0.1) {
       await c.env.CACHE.put(key, JSON.stringify({ minute: now, count: data.count + 10 }), { expirationTtl: 120 });
     }
   } else {
