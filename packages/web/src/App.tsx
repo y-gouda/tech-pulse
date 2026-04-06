@@ -149,6 +149,7 @@ export default function App() {
   }, [loadingMore, loading, pagination, query, activeTab]);
 
   const handleSectionChange = useCallback((section: Section) => {
+    if (section === activeSection) return;
     setActiveSection(section);
     setActiveTab('today');
     localStorage.setItem('tech-pulse-section', section);
@@ -157,16 +158,17 @@ export default function App() {
     setArticles([]);
     setQuery('');
     setSearchCategories(undefined);
-  }, [setQuery, setSearchCategories]);
+  }, [activeSection, setQuery, setSearchCategories]);
 
   const handleTabChange = useCallback((tab: TabKey) => {
+    if (tab === activeTab) return;
     setActiveTab(tab);
     localStorage.setItem('tech-pulse-tab', tab);
     setPage(1);
     setArticles([]);
     setQuery('');
     setSearchCategories(undefined);
-  }, [setQuery, setSearchCategories]);
+  }, [activeTab, setQuery, setSearchCategories]);
 
   const isSearchActive = query.trim().length > 0;
 
