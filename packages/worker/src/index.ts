@@ -29,7 +29,8 @@ app.use('*', cors({
 // Rate limiting middleware (KV-backed, per IP, 60 req/min)
 // Probabilistic write: ~1/10 chance per request to minimize KV writes (1,000/day free tier)
 app.use('/api/*', async (c, next) => {
-  const ip = c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown';
+  // X-Forwarded-For is client-controlled (rate limit bypass); Cloudflare always sets CF-Connecting-IP
+  const ip = c.req.header('CF-Connecting-IP') ?? 'unknown';
   const key = `ratelimit:${ip}`;
   const now = Math.floor(Date.now() / 60_000); // current minute
   const stored = await c.env.CACHE.get(key);
@@ -50,13 +51,23 @@ app.use('/api/*', async (c, next) => {
   await next();
 });
 
+// Constant-time secret comparison (timing attack prevention)
+function isValidCronSecret(provided: string | undefined, expected: string): boolean {
+  if (!provided) return false;
+  const encoder = new TextEncoder();
+  const a = encoder.encode(provided);
+  const b = encoder.encode(expected);
+  if (a.byteLength !== b.byteLength) return false;
+  return crypto.subtle.timingSafeEqual(a, b);
+}
+
 // Manual cron trigger (protected by secret)
 app.post('/api/cron/fetch', async (c) => {
   if (!c.env.CRON_SECRET) {
     return c.json({ ok: false, error: 'Server misconfiguration' }, 500);
   }
   const secret = c.req.header('X-Cron-Secret');
-  if (secret !== c.env.CRON_SECRET) {
+  if (!isValidCronSecret(secret, c.env.CRON_SECRET)) {
     return c.json({ ok: false, error: 'Unauthorized' }, 401);
   }
   c.executionCtx.waitUntil(handleFetchFeeds(c.env));
@@ -68,7 +79,7 @@ app.post('/api/cron/trending', async (c) => {
     return c.json({ ok: false, error: 'Server misconfiguration' }, 500);
   }
   const secret = c.req.header('X-Cron-Secret');
-  if (secret !== c.env.CRON_SECRET) {
+  if (!isValidCronSecret(secret, c.env.CRON_SECRET)) {
     return c.json({ ok: false, error: 'Unauthorized' }, 401);
   }
   c.executionCtx.waitUntil(handleTrending(c.env));

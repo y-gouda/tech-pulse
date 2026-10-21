@@ -1,0 +1,27 @@
+# Dependabot 設定 (2026-10 追加)
+# 週次で npm 依存性 (workspaces: worker / web) の更新を提案する。
+# CI が無いため、PR を merge したら手元で型チェック・ビルド後に deploy すること (CLAUDE.md 参照)。
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+      include: scope
+    groups:
+      # production 依存性 (hono / fast-xml-parser 等) の patch を 1 PR に集約
+      production-patches:
+        applies-to: version-updates
+        update-types: [patch]
+        dependency-type: production
+      # dev 依存性 (wrangler / vite 等) の minor + patch を 1 PR に集約
+      dev-minor-patch:
+        applies-to: version-updates
+        update-types: [patch, minor]
+        dependency-type: development

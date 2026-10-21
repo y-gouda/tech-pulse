@@ -82,7 +82,9 @@ npm run build:web && npx wrangler pages deploy packages/web/dist --project-name=
 - URLは `http://` `https://` のみ許可（`javascript:` XSS防止）
 - FTS5検索クエリはダブルクォートでエスケープ（FTSインジェクション防止）
 - `limit` パラメータは最大100に制限（DoS防止）
-- KVベースのIPレート制限（60req/分）
+- KVベースのIPレート制限（60req/分）。IPは `CF-Connecting-IP` のみ使用（`X-Forwarded-For` は偽装可能なため不使用）
+- 手動Cron API の `X-Cron-Secret` は定数時間比較（`crypto.subtle.timingSafeEqual`）
+- 依存パッケージは Dependabot（`.github/dependabot.yml` + security updates）で週次監視
 - RSS取得に10秒タイムアウト + 5MBサイズ制限
 - localStorage読み込み時にスキーマ検証
 - CSP / X-Frame-Options / X-Content-Type-Options ヘッダー設定済み（`public/_headers`）
